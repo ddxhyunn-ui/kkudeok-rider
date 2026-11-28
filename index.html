@@ -29,6 +29,8 @@
     #gameContainer canvas.main-3d { position: fixed; inset: 0; width: 100vw !important; height: 100vh !important; display: block; outline: none; touch-action: none; }
     .font-display, .num { font-family: var(--font-display); }
     .num { font-variant-numeric: tabular-nums; font-weight: 600; }
+    .tdg { display:inline-block; width:.62em; text-align:center; }
+    .tsp { display:inline-block; width:.3em; text-align:center; }
     .amber { color: var(--amber); }
 
     .glass {
@@ -300,10 +302,19 @@
     body.mp-screen #startMenu { visibility: hidden !important; }
     #partyRoom.open { display: flex !important; }
     #mpCountdown, #mpWaitPill, #mpEndBanner, #podiumView { display:none; pointer-events:none; }
-    #mpCountdown { position:fixed; top:14px; left:50%; transform:translateX(-50%); z-index:44; text-align:center; padding:10px 26px 12px; border-radius:20px; background:rgba(10,16,28,.72); border:1px solid rgba(255,255,255,.18); backdrop-filter:blur(6px); }
-    #mpCountdown .cap { font-size:13px; font-weight:700; color:var(--muted); }
-    #mpCountdown .sec { font-family:var(--font-display); font-weight:700; font-size:54px; line-height:1.05; color:var(--amber); font-variant-numeric:tabular-nums; }
+    /* 완주 후 제한 시간: 출발 카운트다운처럼 화면 중앙에 크게 (주행 시야를 덜 가리도록 반투명, 살짝 위쪽) */
+    #mpCountdown { position:fixed; left:50%; top:34%; transform:translate(-50%, -50%); z-index:44; text-align:center; }
+    #mpCountdown .cap { display:inline-block; font-size:13px; font-weight:700; padding:6px 14px; border-radius:999px; background:rgba(10,16,28,.62); border:1px solid rgba(255,255,255,.16); color:var(--text); backdrop-filter:blur(6px); }
+    #mpCountdown .sec { font-family:var(--font-display); font-weight:700; font-size:min(20vw, 132px); line-height:1; margin-top:18px; color:var(--amber); opacity:.92; text-shadow:0 6px 30px rgba(0,0,0,.45); font-variant-numeric:tabular-nums; animation:mpCdPop .35s ease-out; }
+    @keyframes mpCdPop { 0% { transform:scale(1.6); } 100% { transform:scale(1); } }
     #mpCountdown.hot .sec { color:var(--red); }
+    /* 통신 끊김 알림 */
+    #mpToasts { position:fixed; top:84px; left:50%; transform:translateX(-50%); z-index:46; display:flex; flex-direction:column; align-items:center; gap:8px; pointer-events:none; }
+    .mp-toast { display:flex; align-items:center; gap:10px; padding:11px 18px 11px 14px; border-radius:16px; font-size:14px; font-weight:700; white-space:nowrap;
+      background:rgba(10,16,28,.82); border:1px solid rgba(255,77,94,.55); box-shadow:0 8px 28px rgba(0,0,0,.35); backdrop-filter:blur(10px);
+      opacity:0; transform:translateY(-10px); transition:opacity .25s, transform .25s; }
+    .mp-toast.show { opacity:1; transform:none; }
+    .mp-toast .ic { width:26px; height:26px; border-radius:50%; display:flex; align-items:center; justify-content:center; background:rgba(255,77,94,.2); color:#ff8a95; font-size:14px; }
     #mpWaitPill { position:fixed; bottom:34px; left:50%; transform:translateX(-50%); z-index:44; padding:10px 22px; border-radius:999px; font-weight:700; font-size:15px; background:rgba(10,16,28,.72); border:1px solid rgba(255,255,255,.18); }
     #mpEndBanner { position:fixed; inset:0; z-index:46; align-items:center; justify-content:center; background:rgba(4,8,16,.45); }
     #mpEndBanner b { font-family:var(--font-display); font-size:clamp(44px,9vw,110px); letter-spacing:.08em; color:#fff; text-shadow:0 6px 30px rgba(0,0,0,.6); }
@@ -546,6 +557,7 @@
     </div>
 
     <div id="mpCountdown"><div class="cap"></div><div class="sec">10</div></div>
+    <div id="mpToasts" aria-live="polite"></div>
     <div id="mpWaitPill">🏁 완주! 다른 라이더를 기다리는 중…</div>
     <div id="mpEndBanner"><b>RACE END</b></div>
     <div id="podiumView"><div class="ttl">🏆 RESULT</div><div id="podiumBoard"></div><div id="podiumBar"><i></i></div></div>
@@ -4087,7 +4099,7 @@
         race.lapTimes = [];
         race.checkpointPassed = false;
         ui.lapCurrent.textContent = '1';
-        ui.currentLapTime.textContent = '00:00.00';
+        setTimeText(ui.currentLapTime, '00:00.00');
         ui.finishModal.classList.add('hidden');
         ui.finishModal.classList.remove('flex');
         driftEffects.reset();
@@ -4294,7 +4306,7 @@
           document.body.classList.toggle('practice-mode', !!m.practice);
           const lt = document.getElementById('lapTotal'); if (lt) lt.textContent = m.practice ? ' / ∞' : ' / 2';
           const bl = document.getElementById('bestLapLbl'); if (bl) bl.textContent = m.practice ? '최고 랩' : '최종 기록';
-          if (m.practice || wasPractice) { race.bestLapMs = null; ui.bestLapTime.textContent = '--:--.--'; }
+          if (m.practice || wasPractice) { race.bestLapMs = null; setTimeText(ui.bestLapTime, '--:--.--'); }
         }
         if (mapDescEl) mapDescEl.textContent = m.desc;
         if (finishMapNameEl) finishMapNameEl.textContent = m.name;
@@ -4489,6 +4501,7 @@
       function onActionStateChanged(action, isPressed) {
         const prev = inputState[action];
         if (prev === isPressed) return;
+        if (isPressed && (pauseSoft || race.finished)) return; // 멀티 일시정지 메뉴 / 완주 후에는 조작 입력 무시
         inputState[action] = isPressed;
         syncActionVisual(action);
 
@@ -4652,19 +4665,32 @@
       let pauseStartedAt = 0;
       const pauseModal = document.getElementById('pauseModal');
 
+      // 멀티플레이 중에는 '소프트 일시정지': 메뉴만 띄우고 게임(다른 라이더·타이머·배경)은 계속 진행, 내 조작만 해제
+      let pauseSoft = false;
+      const inMpRace = () => { try { return mp.active(); } catch (_) { return false; } };
+      function releaseAllInputs() {
+        Object.keys(inputState).forEach((act) => {
+          activeKeySources[act].clear();
+          activeTouchButtons[act].clear();
+          onActionStateChanged(act, false);
+        });
+      }
       function pauseGame() {
         if (gamePaused || race.finished) return;
         if (race.phase !== 'racing' && race.phase !== 'countdown') return;
         gamePaused = true;
+        pauseSoft = inMpRace();
         pauseStartedAt = performance.now();
-        audio.suspend();
+        if (pauseSoft) releaseAllInputs(); else audio.suspend();
+        document.getElementById('restartBtn').style.display = pauseSoft ? 'none' : '';
         pauseModal.style.display = 'flex';
         document.getElementById('resumeBtn').focus();
       }
 
       function resumeGame() {
         if (!gamePaused) return;
-        const d = performance.now() - pauseStartedAt;
+        const d = pauseSoft ? 0 : performance.now() - pauseStartedAt; // 소프트 일시정지는 시간이 계속 흐름
+        pauseSoft = false;
         race.lapStartTime += d;
         race.totalStartTime += d;
         kart.lastDriftComboTime += d / 1000;
@@ -4682,7 +4708,7 @@
         if (!quietMenuReset) { try { mp.onMenu(); } catch (_) {} }
         audio.stopMusic();
         hideMapSelect();
-        gamePaused = false;
+        gamePaused = false; pauseSoft = false;
         pauseModal.style.display = 'none';
         race.phase = 'menu';
         race.started = false;
@@ -4754,13 +4780,7 @@
         onActionStateChanged(action, stillActive);
       }, { passive: false });
 
-      window.addEventListener('blur', () => {
-        Object.keys(inputState).forEach((act) => {
-          activeKeySources[act].clear();
-          activeTouchButtons[act].clear();
-          onActionStateChanged(act, false);
-        });
-      });
+      window.addEventListener('blur', releaseAllInputs);
 
       // 멀티터치 & 마우스 온스크린 버튼 바인딩
       document.querySelectorAll('[data-action]').forEach((btn) => {
@@ -4804,7 +4824,7 @@
 
       // 터치 모드에서는 주행 중 앞키(ACCEL)를 계속 누른 상태로 유지
       function syncAutoAccel() {
-        const want = touchMode && race.phase === 'racing' && !gamePaused;
+        const want = touchMode && race.phase === 'racing' && !gamePaused && !race.finished;
         const has = activeTouchButtons.ACCEL.has('auto');
         if (want && !has) {
           activeTouchButtons.ACCEL.add('auto');
@@ -6028,7 +6048,13 @@
             if (race.phase === 'menu' && !room.classList.contains('open')) showRoom(); else showView();
           }
           else if (m.t === 'state') onState(m);
-          else if (m.t === 'left') { const r = remotes.get(m.id); if (r) { scene.remove(r.rig.root); remotes.delete(m.id); } }
+          else if (m.t === 'left' || m.t === 'quit') {
+            const r = remotes.get(m.id); if (r) { scene.remove(r.rig.root); remotes.delete(m.id); }
+            goneIds.add(m.id); // 늦게 도착한 위치 패킷으로 카트가 다시 생기지 않게
+            // 경기 중(카운트다운·주행·완주 대기)에 누가 나가면 다른 라이더 화면에 알림
+            const inRace = race.phase !== 'menu' || ending;
+            if (m.id !== myId && inRace) { const info = players.find((p) => p.id === m.id); notifyDc((m.name || (info && info.name) || '라이더')); }
+          }
           else if (m.t === 'start') startRace(m.map);
           else if (m.t === 'results') results = m.list;
           else if (m.t === 'countdown') { deadline = performance.now() + m.ms; cdEl.querySelector('.cap').textContent = (m.id === myId ? '🥇 1등으로 완주!' : '🏁 ' + m.name + ' 님 완주!') + ' 남은 시간'; cdEl.style.display = 'block'; }
@@ -6036,6 +6062,7 @@
           else if (m.t === 'error') { setMsg(m.msg, true); if (!inRoom) { try { if (ws) { ws.onclose = null; ws.close(); } } catch (_) {} ws = null; } }
         }
         function startRace(mapId) {
+          goneIds.clear();
           room.classList.remove('open'); setScreen(); results = [];
           assignMarks(mapId);
           if (vehOpen) showVehSelect(false);
@@ -6046,13 +6073,28 @@
           };
           if (race.phase !== 'menu') { resetToMenuQuiet(); setTimeout(go, 120); } else go();
         }
-        function makeTag(name) {
-          const cv = document.createElement('canvas'); cv.width = 256; cv.height = 64;
+        // 머리 위 닉네임 태그: 플레이어 색 테두리 글래스 알약 + 색 점 + 아래 꼬리표
+        function makeTag(name, col) {
+          col = col || '#ffb62e';
+          const W = 512, H = 168, cv = document.createElement('canvas'); cv.width = W; cv.height = H;
           const g = cv.getContext('2d');
-          g.fillStyle = 'rgba(10,16,28,.72)'; if (g.roundRect) { g.beginPath(); g.roundRect(6, 8, 244, 48, 24); g.fill(); } else g.fillRect(6, 8, 244, 48);
-          g.font = '700 28px sans-serif'; g.textAlign = 'center'; g.textBaseline = 'middle'; g.fillStyle = '#fff'; g.fillText(name, 128, 33);
+          g.font = '800 54px "Noto Sans KR", sans-serif';
+          const tw = Math.min(360, g.measureText(name).width), pw = tw + 128, px = (W - pw) / 2, py = 14, ph = 104, rr = ph / 2;
+          const pill = () => { g.beginPath(); if (g.roundRect) g.roundRect(px, py, pw, ph, rr); else g.rect(px, py, pw, ph); };
+          g.save(); g.shadowColor = 'rgba(0,0,0,.45)'; g.shadowBlur = 16; g.shadowOffsetY = 4;
+          const bg = g.createLinearGradient(0, py, 0, py + ph); bg.addColorStop(0, 'rgba(26,34,54,.92)'); bg.addColorStop(1, 'rgba(8,12,22,.92)');
+          pill(); g.fillStyle = bg; g.fill(); g.restore();
+          pill(); g.lineWidth = 6; g.strokeStyle = col; g.stroke();
+          // 위쪽 유리 하이라이트
+          g.save(); pill(); g.clip(); const hl = g.createLinearGradient(0, py, 0, py + ph * 0.55); hl.addColorStop(0, 'rgba(255,255,255,.16)'); hl.addColorStop(1, 'rgba(255,255,255,0)'); g.fillStyle = hl; g.fillRect(px, py, pw, ph * 0.55); g.restore();
+          // 아래 꼬리표 (삼각형)
+          g.beginPath(); g.moveTo(W / 2 - 18, py + ph - 2); g.lineTo(W / 2 + 18, py + ph - 2); g.lineTo(W / 2, py + ph + 30); g.closePath(); g.fillStyle = col; g.fill();
+          // 색 점
+          g.beginPath(); g.arc(px + 52, py + ph / 2, 17, 0, Math.PI * 2); g.fillStyle = col; g.fill(); g.lineWidth = 5; g.strokeStyle = 'rgba(255,255,255,.9)'; g.stroke();
+          g.fillStyle = '#fff'; g.textAlign = 'left'; g.textBaseline = 'middle';
+          g.save(); g.beginPath(); g.rect(px + 84, py, tw + 4, ph); g.clip(); g.fillText(name, px + 84, py + ph / 2 + 3); g.restore();
           const sp = new THREE.Sprite(new THREE.SpriteMaterial({ map: new THREE.CanvasTexture(cv), depthTest: false, transparent: true, fog: false }));
-          sp.scale.set(6, 1.5, 1); sp.position.y = 3.6; sp.renderOrder = 999; return sp;
+          sp.scale.set(6.4, 2.1, 1); sp.position.y = 3.8; sp.renderOrder = 999; return sp;
         }
         function getRemote(id, vId, name) {
           let r = remotes.get(id);
@@ -6060,13 +6102,15 @@
           if (!r) {
             const rig = buildRig(vId);
             if (rig.root.parent !== scene) scene.add(rig.root);
-            rig.root.add(makeTag(name));
+            rig.root.add(makeTag(name, markOf(id)));
             r = { rig, vId, name, init: false, tx: 0, ty: 0, tz: 0, th: 0, b: 0, p: 0 };
             remotes.set(id, r);
           }
           return r;
         }
+        const goneIds = new Set();
         function onState(m) {
+          if (goneIds.has(m.id)) return;
           const info = players.find((p) => p.id === m.id); const r = getRemote(m.id, m.v || 'kart', info ? info.name : '라이더');
           r.tx = m.x; r.ty = m.y; r.tz = m.z; r.th = m.h; r.b = m.b; r.p = m.p || 0;
           if (!r.init) { r.init = true; const o = r.rig.root; o.position.set(m.x, m.y, m.z); o.rotation.y = m.h; }
@@ -6079,7 +6123,9 @@
           const dt = Math.min(0.1, (now - last) / 1000); last = now;
           if (deadline) {
             const left = Math.max(0, deadline - now), sec = Math.ceil(left / 1000);
-            cdEl.querySelector('.sec').textContent = String(sec); cdEl.classList.toggle('hot', sec <= 3);
+            const secEl = cdEl.querySelector('.sec');
+            if (secEl.textContent !== String(sec)) { secEl.textContent = String(sec); secEl.style.animation = 'none'; void secEl.offsetWidth; secEl.style.animation = ''; }
+            cdEl.classList.toggle('hot', sec <= 3);
           }
           if (!inRoom) return;
           const active = race.phase === 'countdown' || race.phase === 'racing';
@@ -6143,6 +6189,13 @@
 
         // ---- 레이스 종료 · 시상대 연출 ----
         const PODIUM_MS = 8500;
+        function notifyDc(name) {
+          const box = $('mpToasts'), el = document.createElement('div');
+          el.className = 'mp-toast'; el.innerHTML = '<span class="ic">⚠</span><span></span>';
+          el.lastChild.textContent = name + '님의 통신이 끊겼습니다.';
+          box.appendChild(el); void el.offsetWidth; el.classList.add('show');
+          setTimeout(() => { el.classList.remove('show'); setTimeout(() => el.remove(), 300); }, 4000);
+        }
         function beginEnding(list) {
           if (ending) return; ending = true; deadline = 0;
           cdEl.style.display = 'none'; pillEl.style.display = 'none';
@@ -6300,7 +6353,7 @@
           onFinish(ms) { if (inRoom) { tx({ t: 'finish', ms: Math.round(ms) }); if (!ending) pillEl.style.display = 'block'; } },
           onMenu() {
             if (!inRoom) return;
-            if (myId === hostId) tx({ t: 'abort' });
+            tx({ t: 'quit' }); // 경기 중 나가기: 나만 리타이어, 다른 라이더 경기는 계속
             deadline = 0; cdEl.style.display = 'none'; pillEl.style.display = 'none';
             room.classList.add('open'); setScreen(); showView();
           },
@@ -6979,6 +7032,13 @@
       // --------------------------------------------------------------------------
       // 8. 물리 엔진 업데이트 (드리프트 / 더블 드리프트 / 끌기 / 뉴커팅 / 순간부스터)
       // --------------------------------------------------------------------------
+      // 시간 표시: 숫자마다 고정 폭 칸을 써서 숫자가 바뀌어도 패널 크기가 변하지 않게
+      function setTimeText(el, str) {
+        str = String(str);
+        if (el._t === str) return; el._t = str;
+        el.innerHTML = str.split('').map((c) => '<span class="' + (/[0-9-]/.test(c) ? 'tdg' : 'tsp') + '">' + c + '</span>').join('');
+      }
+
       function updatePhysics(dt) {
         if (race.phase !== 'racing') {
           if (race.phase === 'countdown') updateCountdown(frameRealDt);
@@ -6986,9 +7046,12 @@
           return;
         }
         if (race.finished) {
-          kart.speed *= Math.pow(0.25, dt);
           audio.silenceEngine(); // 완주 후 배기음 끄기
-          return;
+          if (!inMpRace()) { kart.speed *= Math.pow(0.25, dt); return; }
+          // 멀티: 골문을 지난 뒤에도 그대로 굴러가며 서서히 감속 (조작 입력은 무시, 일반 물리로 이동)
+          kart.speed *= Math.pow(0.55, dt);
+          kart.nitroBoostTimer = 0; kart.instantBoostTimer = 0;
+          if (kart.isDrifting) endDriftAndCheckInstantWindow();
         }
 
         // 타이머 감소
@@ -7347,7 +7410,7 @@
         // 부스터존 충돌 판정: 일반 부스터는 끊고 부스터존 효과(1.8초, x1.62) 적용
         for (let i = 0; i < boostPads.length; i++) {
           const pad = boostPads[i];
-          if (pad.map !== currentMapId || pad.cooldown > 0 || Math.abs(kart.y - pad.y) >= 3.5) continue;
+          if (race.finished || pad.map !== currentMapId || pad.cooldown > 0 || Math.abs(kart.y - pad.y) >= 3.5) continue;
           const dx = kart.x - pad.x, dz = kart.z - pad.z;
           if (Math.abs(dx * pad.tx + dz * pad.tz) < pad.halfLen && Math.abs(dx * pad.nx + dz * pad.nz) < pad.halfWid) {
             pad.cooldown = 1.6;
@@ -7377,8 +7440,9 @@
 
           if (!MAPS[currentMapId].practice && race.currentLap >= race.totalLaps) {
             race.finished = true;
+            releaseAllInputs(); // 완주 순간 누르고 있던 키 해제 → 이후 서서히 감속
             const totalMs = now - race.totalStartTime;
-            ui.bestLapTime.textContent = formatTime(totalMs);
+            setTimeText(ui.bestLapTime, formatTime(totalMs));
             ui.finalTotalTime.textContent = formatTime(totalMs);
             ui.finalBestLap.textContent = formatTime(race.bestLapMs);
             let _inMp = false; try { _inMp = mp.active(); } catch (_) {}
@@ -7395,7 +7459,7 @@
             race.lapStartTime = now;
             ui.lapCurrent.textContent = String(race.currentLap);
             const isPractice = !!MAPS[currentMapId].practice;
-            if (isPractice) ui.bestLapTime.textContent = formatTime(race.bestLapMs);
+            if (isPractice) setTimeText(ui.bestLapTime, formatTime(race.bestLapMs));
             const isFinalLap = !isPractice && race.currentLap === race.totalLaps;
             showEventBanner(
               isFinalLap ? '🔥' : '🏁',
@@ -7824,7 +7888,7 @@
 
       function updateHUD(nowMs, dt) {
         if (race.started && !race.finished) {
-          ui.currentLapTime.textContent = formatTime(nowMs - race.totalStartTime);
+          setTimeText(ui.currentLapTime, formatTime(nowMs - race.totalStartTime));
         }
 
         if (race.bannerTimer > 0) {
@@ -7907,7 +7971,7 @@
 
       function animate(nowMs) {
         requestAnimationFrame(animate);
-        if (gamePaused) { lastFrameTime = nowMs; return; }
+        if (gamePaused && !pauseSoft) { lastFrameTime = nowMs; return; }
         frameRealDt = Math.min(1.0, Math.max(0.001, (nowMs - lastFrameTime) / 1000));
         const dt = Math.min(0.05, Math.max(0.001, (nowMs - lastFrameTime) / 1000));
         lastFrameTime = nowMs;

@@ -39,6 +39,8 @@ function roomMsg(r) {
   return { t: 'room', code: r.code, hostId: r.hostId, title: r.title, public: r.public, max: r.max,
     players: [...r.players.values()].map((p) => ({ id: p.id, name: p.name, v: p.v, host: p.id === r.hostId })) };
 }
+// 완주했거나 경기 도중 나간(quit) 라이더만 남았는지
+const allDone = (r) => [...r.players.values()].every((p) => p.done || p.quit) && [...r.players.values()].some((p) => p.done || p.quit);
 const broadcast = (r, o, exceptId) => { r.players.forEach((p) => { if (p.id !== exceptId) send(p.ws, o); }); };
 
 function listRooms() {
@@ -63,12 +65,13 @@ function endRace(r) {
 function leave(ws) {
   const r = ws.room; if (!r) return;
   ws.room = null;
+  const who = r.players.get(ws.pid);
   r.players.delete(ws.pid);
   if (r.players.size === 0) { clearTimeout(r.endTimer); rooms.delete(r.code); return; }
   if (r.hostId === ws.pid) r.hostId = r.players.keys().next().value;
-  broadcast(r, { t: 'left', id: ws.pid });
+  broadcast(r, { t: 'left', id: ws.pid, name: who ? who.name : '' });
   broadcast(r, roomMsg(r));
-  if (r.racing && r.results.length && [...r.players.values()].every((p) => p.done)) endRace(r);
+  if (r.racing && allDone(r)) endRace(r);
 }
 
 function addPlayer(ws, r, m) {
@@ -119,18 +122,26 @@ wss.on('connection', (ws) => {
     if (m.t === 'start') {
       if (ws.pid !== r.hostId) return;
       clearTimeout(r.endTimer); r.endTimer = null;
-      r.racing = true; r.startedAt = Date.now(); r.results = []; r.players.forEach((p) => { p.done = false; p.prog = 0; });
+      r.racing = true; r.startedAt = Date.now(); r.results = []; r.players.forEach((p) => { p.done = false; p.quit = false; p.prog = 0; });
       return broadcast(r, { t: 'start', map: clean(m.map, 40, '') });
     }
     if (m.t === 'finish') {
-      if (!r.racing || me.done) return;
+      if (!r.racing || me.done || me.quit) return;
       me.done = true; r.results.push({ id: ws.pid, name: me.name, v: me.v, ms: Math.max(0, Math.round(num(m.ms))) });
       broadcast(r, { t: 'results', list: r.results });
-      if ([...r.players.values()].every((p) => p.done)) return endRace(r);
+      if (allDone(r)) return endRace(r);
       if (!r.endTimer) { // 1등 완주 → 제한 시간 카운트다운 시작
         r.endTimer = setTimeout(() => endRace(r), COUNTDOWN_MS);
         broadcast(r, { t: 'countdown', ms: COUNTDOWN_MS, id: ws.pid, name: me.name });
       }
+      return;
+    }
+    // 경기 도중 '메인 메뉴로' → 그 라이더만 리타이어 처리하고 다른 라이더에게 알림 (경기는 계속)
+    if (m.t === 'quit') {
+      if (!r.racing || me.done || me.quit) return;
+      me.quit = true;
+      broadcast(r, { t: 'quit', id: ws.pid, name: me.name }, ws.pid);
+      if (allDone(r)) endRace(r);
       return;
     }
     if (m.t === 'abort') { if (ws.pid === r.hostId) { clearTimeout(r.endTimer); r.endTimer = null; r.racing = false; r.results = []; r.players.forEach((p) => { p.done = false; }); } }
