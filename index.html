@@ -133,21 +133,21 @@
     .veh-row .veh-card { flex:1 0 170px; min-width:170px; max-width:240px; }
     .veh-card { position:relative; }
     /* 차고 (좌: 캐릭터/카트 목록, 우: 3D 미리보기) */
-    .garage { display:none; background:rgba(6,10,20,.78); backdrop-filter:blur(4px); }
+    .garage { display:none; background:transparent; }
     .garage.flex { display:grid; grid-template-columns:minmax(300px, 42%) 1fr; }
-    .g-left { display:flex; flex-direction:column; min-height:0; padding:22px 26px 22px; overflow-y:auto; }
+    .g-left { display:flex; flex-direction:column; min-height:0; padding:22px 26px 22px; overflow-y:auto; background:rgba(6,10,20,.78); backdrop-filter:blur(4px); -webkit-backdrop-filter:blur(4px); }
     .g-tabs { display:inline-flex; align-self:flex-start; gap:4px; padding:4px; border-radius:14px; background:rgba(255,255,255,.08); border:1px solid rgba(255,255,255,.14); }
     .g-tab { padding:9px 20px; border-radius:10px; font-weight:700; font-size:14px; color:var(--muted); cursor:pointer; transition:background .15s, color .15s; }
     .g-tab:hover { color:var(--text); }
     .g-tab.on { background:var(--amber); color:#1a1200; }
     .g-list { display:grid; grid-template-columns:repeat(auto-fill, minmax(150px, 1fr)); gap:12px; margin-top:16px; align-content:start; }
     .g-list.hidden { display:none; }
-    .g-right { position:relative; min-height:0; background:radial-gradient(ellipse at 50% 42%, #f4f7fb 0%, #dfe7f1 55%, #b9c6d6 100%); overflow:hidden; }
+    .g-right { position:relative; min-height:0; background:transparent; overflow:hidden; }
     #garageCanvas { position:absolute; inset:0; width:100%; height:100%; display:block; cursor:grab; touch-action:none; }
     #garageCanvas.drag { cursor:grabbing; }
     .g-cap { position:absolute; left:50%; bottom:22px; transform:translateX(-50%); white-space:nowrap; padding:9px 18px; border-radius:999px; background:rgba(10,16,28,.82); font-weight:700; font-size:14px; pointer-events:none; }
     .g-dot { margin:0 8px; color:var(--muted); }
-    .g-hint { position:absolute; right:16px; top:14px; font-size:11px; color:#4b5668; pointer-events:none; }
+    .g-hint { position:absolute; right:16px; top:14px; font-size:11px; color:#fff; text-shadow:0 1px 3px rgba(0,0,0,.6); pointer-events:none; }
     @media (max-width: 720px) and (orientation: portrait) {
       .garage.flex { grid-template-columns:1fr; grid-template-rows:42% 1fr; }
       .g-right { order:-1; }
@@ -4161,7 +4161,7 @@
         vehOpen = !!open;
         vehEl.style.zIndex = document.body.classList.contains('mp-screen') ? '50' : '';
         if (open) { ui.startMenu.style.opacity = '0'; ui.startMenu.style.pointerEvents = 'none'; vehEl.classList.remove('hidden'); vehEl.classList.add('flex'); }
-        else { vehEl.classList.add('hidden'); vehEl.classList.remove('flex'); ui.startMenu.style.opacity = '1'; ui.startMenu.style.pointerEvents = ''; container.focus(); }
+        else { vehEl.classList.add('hidden'); vehEl.classList.remove('flex'); setVehicle(currentVehicle); ui.startMenu.style.opacity = '1'; ui.startMenu.style.pointerEvents = ''; container.focus(); }
       }
       document.getElementById('vehBtn').addEventListener('click', (e) => { e.stopPropagation(); if (race.phase === 'menu') showVehSelect(true); });
       document.getElementById('vehBackBtn').addEventListener('click', (e) => { e.stopPropagation(); showVehSelect(false); });
@@ -6212,10 +6212,10 @@
         sun.shadow.mapSize.set(1024, 1024); Object.assign(sun.shadow.camera, { left: -4, right: 4, top: 4, bottom: -4, near: 0.5, far: 30 });
         gScene.add(sun);
         const rim = new THREE.DirectionalLight(0xbfd8ff, 0.28); rim.position.set(-5, 3, -4); gScene.add(rim);
-        const floor = new THREE.Mesh(new THREE.CircleGeometry(3.4, 48), new THREE.MeshLambertMaterial({ color: 0xcfd8e4 }));
+        const floor = new THREE.Mesh(new THREE.CircleGeometry(3.4, 48), new THREE.ShadowMaterial({ opacity: 0.3 }));
         floor.rotation.x = -Math.PI / 2; floor.position.y = -0.005; floor.receiveShadow = true; gScene.add(floor);
         const ring = new THREE.Mesh(new THREE.RingGeometry(3.3, 3.42, 64), new THREE.MeshBasicMaterial({ color: 0xffb62e }));
-        ring.rotation.x = -Math.PI / 2; gScene.add(ring);
+        ring.rotation.x = -Math.PI / 2; ring.visible = false; gScene.add(ring);
         const cam = new THREE.PerspectiveCamera(30, 1, 0.1, 100);
         const rigs = {};
         let tab = 'char', yaw = 1.05, pitch = 0.22, idle = 0, dragging = false, lastX = 0, lastY = 0, last = 0;
@@ -6261,6 +6261,8 @@
             if (cv.width !== Math.round(w * pr) || cv.height !== Math.round(h * pr)) { gr.setPixelRatio(pr); gr.setSize(w, h, false); }
             cam.aspect = w / h; cam.updateProjectionMatrix();
             const rig = rigFor(currentVehicle);
+            // 투명 배경 뒤로 게임 씬의 내 카트가 겹쳐 보이지 않게 숨김 (닫을 때 setVehicle로 복구)
+            Object.keys(kartRigs).forEach((k) => { kartRigs[k].root.visible = false; });
             Object.keys(rigs).forEach((k) => { rigs[k].root.visible = (k === currentVehicle); });
             rig.setChar(currentChar);
             rig.update({ speed: 0, maxSpeed: 1, animPhase: nowMs / 1000 });
