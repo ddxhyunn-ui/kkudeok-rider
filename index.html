@@ -345,9 +345,29 @@
     .mp-btn.pri { background:linear-gradient(135deg,#ffd56b,#ff8a2e); color:#2a1500; border:none; }
     .mp-btn:disabled { opacity:.45; cursor:default; }
     .mp-pl { display:flex; align-items:center; gap:8px; padding:8px 12px; border-radius:12px; background:rgba(255,255,255,.06); font-size:14px; }
-    #mpRank { display:none; position:fixed; left:12px; top:46%; z-index:12; min-width:150px; padding:8px 10px; border-radius:12px; background:rgba(10,16,28,.62); border:1px solid rgba(255,255,255,.16); font-size:12px; pointer-events:none; }
-    #mpRank .r { display:flex; justify-content:space-between; gap:10px; padding:2px 0; } #mpRank .me { color:var(--amber); font-weight:700; }
-    #mpRank .mk { display:inline-block; width:10px; height:10px; border-radius:50%; margin-right:6px; vertical-align:-1px; border:1.5px solid rgba(255,255,255,.85); box-sizing:border-box; }
+    /* 멀티플레이 실시간 순위표 (HUD 글래스 패널 스타일) */
+    #mpRank { display:none; position:fixed; left:12px; top:50%; transform:translateY(-50%); z-index:12; width:212px; padding:10px 10px 8px; border-radius:18px; pointer-events:none;
+      background:var(--glass); border:1px solid var(--line); backdrop-filter:blur(14px) saturate(1.3); -webkit-backdrop-filter:blur(14px) saturate(1.3);
+      box-shadow:0 8px 28px rgba(0,0,0,.28), inset 0 1px 0 rgba(255,255,255,.08); }
+    #mpRank .rk-head { display:flex; align-items:center; justify-content:space-between; padding:0 4px 8px; }
+    #mpRank .rk-head .live { display:inline-flex; align-items:center; gap:6px; }
+    #mpRank .rk-head .live i { width:7px; height:7px; border-radius:50%; background:#ff4d5e; box-shadow:0 0 0 0 rgba(255,77,94,.6); animation:rkLive 1.6s ease-out infinite; }
+    @keyframes rkLive { 0% { box-shadow:0 0 0 0 rgba(255,77,94,.6); } 100% { box-shadow:0 0 0 7px rgba(255,77,94,0); } }
+    #mpRank .rk-list { position:relative; }
+    #mpRank .rr { position:absolute; left:0; right:0; top:0; height:40px; display:flex; align-items:center; gap:8px; padding:0 8px 0 6px; border-radius:12px; transition:transform .38s cubic-bezier(.2,.8,.2,1), background .2s; }
+    #mpRank .rr.me { background:linear-gradient(90deg, rgba(255,182,46,.22), rgba(255,182,46,.06)); box-shadow:inset 0 0 0 1px rgba(255,182,46,.45); }
+    #mpRank .pos { width:22px; text-align:center; font-family:var(--font-display); font-weight:700; font-size:20px; line-height:1; color:var(--muted); font-variant-numeric:tabular-nums; }
+    #mpRank .pos.p1 { color:#ffd24a; text-shadow:0 0 10px rgba(255,210,74,.55); } #mpRank .pos.p2 { color:#e3e9f2; } #mpRank .pos.p3 { color:#f0a46a; }
+    #mpRank .bar { width:4px; height:26px; border-radius:3px; flex:none; box-shadow:0 0 8px currentColor; }
+    #mpRank .info { flex:1; min-width:0; }
+    #mpRank .nm { display:flex; align-items:center; gap:5px; font-size:13px; font-weight:700; line-height:1.1; white-space:nowrap; overflow:hidden; }
+    #mpRank .nm b { overflow:hidden; text-overflow:ellipsis; font-weight:700; }
+    #mpRank .rr.me .nm b { color:var(--amber); }
+    #mpRank .tag { flex:none; font-size:9px; font-weight:800; padding:2px 5px; border-radius:6px; background:var(--amber); color:#1a1200; letter-spacing:.04em; }
+    #mpRank .prog { margin-top:5px; height:3px; border-radius:3px; background:rgba(255,255,255,.12); overflow:hidden; }
+    #mpRank .prog i { display:block; height:100%; border-radius:3px; transition:width .3s linear; }
+    #mpRank .fin { margin-top:3px; font-family:var(--font-display); font-size:12px; font-weight:600; color:#7ef0a6; font-variant-numeric:tabular-nums; }
+    @media (max-width: 640px) { #mpRank { width:170px; padding:8px 6px 6px; } #mpRank .nm { font-size:12px; } }
     /* ===== UI 크기 (설정 > 화면). --ui-scale 배율, 화면 모서리를 기준으로 커지고 작아짐 ===== */
     :root { --ui-scale: 1; }
     .ui-tl, .ui-tr, .ui-bl, .ui-bc, .ui-br, #eventBannerBox, #practiceGuideBtn { scale: var(--ui-scale); }
@@ -4279,7 +4299,7 @@
         if (mapDescEl) mapDescEl.textContent = m.desc;
         if (finishMapNameEl) finishMapNameEl.textContent = m.name;
         const wasOpen = mapSelectOpen;
-        resetFullRace(true);
+        resetToMenuQuiet();
         if (wasOpen) showMapSelect(true);
         const s = getTrackSampleAtT(0);
         camPos.set(s.x - 14, s.y + 7, s.z);
@@ -4655,8 +4675,11 @@
         container.focus();
       }
 
+      // 맵 전환/멀티 시작 준비 중의 내부 리셋은 '메인 메뉴로 나가기'가 아니므로 멀티 파티 화면 복귀·abort를 보내지 않음
+      let quietMenuReset = false;
+      function resetToMenuQuiet() { quietMenuReset = true; try { resetFullRace(true); } finally { quietMenuReset = false; } }
       function goToMainMenu() {
-        try { mp.onMenu(); } catch (_) {}
+        if (!quietMenuReset) { try { mp.onMenu(); } catch (_) {} }
         audio.stopMusic();
         hideMapSelect();
         gamePaused = false;
@@ -6021,7 +6044,7 @@
             if (mapId && MAPS[mapId] && mapId !== currentMapId) selectMap(mapId);
             setTimeout(() => { if (race.phase === 'menu') { resetRemoteTargets(); beginCountdown(); } }, 220);
           };
-          if (race.phase !== 'menu') { resetFullRace(true); setTimeout(go, 120); } else go();
+          if (race.phase !== 'menu') { resetToMenuQuiet(); setTimeout(go, 120); } else go();
         }
         function makeTag(name) {
           const cv = document.createElement('canvas'); cv.width = 256; cv.height = 64;
@@ -6075,13 +6098,45 @@
           }
           if (now - lastRank > 250) { lastRank = now; drawRank(active); }
         }
+        // 순위표: 행을 id별로 유지하고 translateY로 위치만 바꿔 순위 변동이 부드럽게 미끄러지도록
+        const rankRows = new Map(), RK_H = 44;
+        rankEl.innerHTML = '<div class="rk-head"><span class="lbl live"><i></i>LIVE RANK</span><span class="lbl rk-cnt"></span></div><div class="rk-list"></div>';
+        const rankList = rankEl.querySelector('.rk-list'), rankCnt = rankEl.querySelector('.rk-cnt');
         function drawRank(active) {
           if (!active) { rankEl.style.display = 'none'; return; }
           const done = new Map(results.map((r, i) => [r.id, { i, ms: r.ms }]));
           const rows = [{ id: myId, name: myName(), p: (race.currentLap - 1) + (kart.trackT || 0), me: true }];
           remotes.forEach((r, id) => rows.push({ id, name: r.name, p: r.p }));
           rows.sort((a, b) => { const da = done.get(a.id), db = done.get(b.id); if (da && db) return da.i - db.i; if (da) return -1; if (db) return 1; return b.p - a.p; });
-          rankEl.innerHTML = rows.map((r, i) => { const d = done.get(r.id); return '<div class="r' + (r.me ? ' me' : '') + '"><span><i class="mk" style="background:' + markOf(r.id) + '"></i>' + (i + 1) + '. ' + esc(r.name) + '</span><span>' + (d ? fmt(d.ms) : '') + '</span></div>'; }).join('');
+          const laps = race.totalLaps || 2, seen = new Set();
+          rows.forEach((r, i) => {
+            seen.add(r.id);
+            let el = rankRows.get(r.id);
+            if (!el) {
+              el = document.createElement('div'); el.className = 'rr';
+              el.innerHTML = '<span class="pos"></span><span class="bar"></span><div class="info"><div class="nm"><b></b></div><div class="prog"><i></i></div><div class="fin" style="display:none"></div></div>';
+              el.style.transform = 'translateY(' + (i * RK_H) + 'px)';
+              rankList.appendChild(el); rankRows.set(r.id, el);
+            }
+            const col = markOf(r.id), d = done.get(r.id);
+            el.classList.toggle('me', !!r.me);
+            el.style.transform = 'translateY(' + (i * RK_H) + 'px)';
+            const pos = el.querySelector('.pos'); pos.textContent = String(i + 1); pos.className = 'pos' + (i < 3 ? ' p' + (i + 1) : '');
+            const bar = el.querySelector('.bar'); bar.style.background = col; bar.style.color = col;
+            const nm = el.querySelector('.nm');
+            nm.querySelector('b').textContent = r.name;
+            const tag = nm.querySelector('.tag');
+            if (r.me && !tag) nm.insertAdjacentHTML('beforeend', '<span class="tag">ME</span>'); else if (!r.me && tag) tag.remove();
+            const prog = el.querySelector('.prog'), fin = el.querySelector('.fin');
+            if (d) { prog.style.display = 'none'; fin.style.display = ''; fin.textContent = '🏁 ' + fmt(d.ms); }
+            else {
+              prog.style.display = ''; fin.style.display = 'none';
+              const pi = prog.querySelector('i'); pi.style.background = col; pi.style.width = Math.max(2, Math.min(100, (r.p / laps) * 100)).toFixed(1) + '%';
+            }
+          });
+          rankRows.forEach((el, id) => { if (!seen.has(id)) { el.remove(); rankRows.delete(id); } });
+          rankList.style.height = (rows.length * RK_H - 4) + 'px';
+          rankCnt.textContent = rows.length + '명';
           rankEl.style.display = rows.length > 1 ? 'block' : 'none';
         }
         requestAnimationFrame(tick);
