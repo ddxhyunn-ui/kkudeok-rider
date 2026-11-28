@@ -118,6 +118,33 @@
     .cd-num { font-family: var(--font-display); font-weight: 700; font-size: min(26vw, 170px); line-height: 1; min-height: 1em; text-shadow: 0 6px 30px rgba(0,0,0,.45); animation: cdPop .35s ease-out; }
 
     /* 테크닉 도움말 */
+    /* 메인 메뉴: 타이틀과 같은 기울어진 스티커 스타일 버튼 */
+    .mm { max-width:100vw; padding:20px 24px 20px clamp(24px, 6vw, 88px); max-height:100vh; overflow-y:auto; overflow-x:hidden; }
+    .mm .game-title { margin-bottom:clamp(22px, 5vh, 44px); }
+    .mm-main { display:flex; flex-direction:column; gap:14px; width:min(360px, calc(100vw - 48px)); }
+    .mm-btn, .mm-tile { --sh:#10213f; position:relative; display:block; transform:skewX(-8deg); border:3px solid var(--sh); cursor:pointer; transition:transform .12s ease, box-shadow .12s ease, filter .12s ease; }
+    .mm-in { display:flex; align-items:center; transform:skewX(8deg); }
+    .mm-btn { height:clamp(62px, 10vh, 78px); padding:0 20px 0 14px; border-radius:18px; box-shadow:0 6px 0 var(--sh), 0 14px 26px rgba(0,0,0,.35); }
+    .mm-btn .mm-in { height:100%; gap:14px; }
+    .mm-btn .mm-ic { width:44px; height:44px; flex:none; border-radius:13px; display:flex; align-items:center; justify-content:center; background:rgba(16,33,63,.14); }
+    .mm-btn .mm-ic svg { width:26px; height:26px; }
+    .mm-btn .mm-tx { flex:1; text-align:left; font-family:'Black Han Sans', 'Noto Sans KR', sans-serif; font-size:clamp(24px, 3.4vh, 30px); letter-spacing:.02em; line-height:1; }
+    .mm-btn .mm-go { width:34px; height:34px; border-radius:50%; display:flex; align-items:center; justify-content:center; background:var(--sh); color:#fff; transition:transform .15s; }
+    .mm-btn .mm-go svg { width:15px; height:15px; margin-left:2px; }
+    .mm-ta { background:linear-gradient(180deg, #ffd969, #ffb62e 60%, #f29a10); color:#1a1200; }
+    .mm-mp { background:linear-gradient(180deg, #8af0ff, #5ce1ff 60%, #2fbfe4); color:#06222b; }
+    .mm-btn:hover { transform:skewX(-8deg) translateY(-3px); box-shadow:0 9px 0 var(--sh), 0 18px 30px rgba(0,0,0,.4); filter:brightness(1.05); }
+    .mm-btn:hover .mm-go { transform:translateX(4px); }
+    .mm-btn:active, .mm-tile:active { transform:skewX(-8deg) translateY(4px); box-shadow:0 2px 0 var(--sh), 0 6px 12px rgba(0,0,0,.3); }
+    .mm-btn:focus-visible, .mm-tile:focus-visible { outline:3px solid #fff; outline-offset:3px; }
+    .mm-sub { display:grid; grid-template-columns:repeat(3, 1fr); gap:12px; width:min(360px, calc(100vw - 48px)); margin-top:16px; }
+    .mm-tile { height:clamp(62px, 9.5vh, 76px); border-radius:16px; background:linear-gradient(180deg, rgba(36,50,78,.92), rgba(18,26,44,.92)); color:#e8edf5; box-shadow:0 5px 0 var(--sh), 0 12px 22px rgba(0,0,0,.3); }
+    .mm-tile .mm-in { height:100%; flex-direction:column; justify-content:center; gap:5px; font-weight:800; font-size:13px; }
+    .mm-tile svg { width:24px; height:24px; }
+    .mm-tile .mm-q { font-family:var(--font-display); font-weight:700; font-size:24px; line-height:24px; color:var(--cyan); }
+    #vehBtn svg { color:var(--amber); }
+    .mm-tile:hover { transform:skewX(-8deg) translateY(-3px); box-shadow:0 8px 0 var(--sh), 0 16px 26px rgba(0,0,0,.35); background:linear-gradient(180deg, rgba(48,66,102,.95), rgba(24,34,56,.95)); }
+    .mm-gear:hover svg { transform:rotate(40deg); } .mm-gear svg { transition:transform .3s; }
     .help-btn { width:56px; height:56px; border-radius:50%; display:inline-flex; align-items:center; justify-content:center; font-family:var(--font-display); font-weight:700; font-size:26px; color:var(--cyan); background:rgba(92,225,255,.12); border:2px solid rgba(92,225,255,.55); cursor:pointer; transition:transform .12s, background .12s; }
     .help-btn:hover { background:rgba(92,225,255,.25); transform:translateY(-1px); }
     .hanger-btn { width:56px; height:56px; border-radius:50%; display:inline-flex; align-items:center; justify-content:center; color:var(--amber); background:rgba(255,182,46,.12); border:2px solid rgba(255,182,46,.55); cursor:pointer; transition:transform .12s, background .12s; }
@@ -217,11 +244,49 @@
     .set-row input[type=range]::-moz-range-thumb { width:18px; height:18px; border-radius:50%; background:#fff; border:3px solid var(--amber); }
     #techModal { display:none; }
     #techModal.open { display:flex; }
-    .tech-card { background:rgba(255,255,255,.06); border:1px solid var(--line); border-radius:16px; }
-    .tech-card svg { display:block; width:100%; height:auto; max-height:150px; background:#141c2c; border-radius:15px 15px 0 0; }
-    .tech-card .body { padding:12px 14px 14px; font-size:13px; line-height:1.55; color:var(--muted); }
-    .tech-card h3 { font-family:var(--font-display); font-weight:700; font-size:16px; color:#fff; margin:0 0 6px; display:flex; align-items:center; gap:8px; flex-wrap:wrap; }
-    .tech-card .how { color:#fff; margin-bottom:4px; }
+    /* 테크닉 가이드 (좌: 목록, 우: 상세) */
+    .tg { width:100%; max-width:980px; max-height:92dvh; display:flex; flex-direction:column; border-radius:26px; overflow:hidden;
+      background:linear-gradient(180deg, rgba(20,28,46,.96), rgba(10,15,26,.97)); border:1px solid rgba(255,255,255,.14); box-shadow:0 24px 60px rgba(0,0,0,.5); }
+    .tg-head { display:flex; align-items:center; gap:16px; padding:16px 18px 14px 22px; border-bottom:1px solid var(--line); }
+    .tg-title { font-family:'Black Han Sans', 'Noto Sans KR', sans-serif; font-weight:400; font-size:26px; letter-spacing:.01em; transform:skewX(-8deg); color:#fff; text-shadow:2px 3px 0 #10213f; }
+    .tg-prog { flex:1; display:flex; gap:5px; justify-content:flex-end; }
+    .tg-prog i { width:18px; height:5px; border-radius:3px; background:rgba(255,255,255,.14); transition:background .2s, width .2s; }
+    .tg-prog i.on { width:30px; background:var(--amber); }
+    .tg-main { flex:1; min-height:0; display:grid; grid-template-columns:240px 1fr; }
+    .tg-nav { overflow-y:auto; padding:12px; border-right:1px solid var(--line); display:flex; flex-direction:column; gap:6px; }
+    .tg-item { display:flex; align-items:center; gap:10px; width:100%; padding:10px 12px; border-radius:14px; text-align:left; color:var(--muted); font-weight:700; font-size:14px; cursor:pointer; border:1px solid transparent; transition:background .15s, color .15s, border-color .15s; }
+    .tg-item:hover { background:rgba(255,255,255,.06); color:var(--text); }
+    .tg-item .ic { width:30px; height:30px; flex:none; border-radius:10px; display:flex; align-items:center; justify-content:center; font-size:15px; background:rgba(255,255,255,.07); }
+    .tg-item .nm { flex:1; min-width:0; }
+    .tg-item.on { background:rgba(255,255,255,.08); color:#fff; border-color:var(--ac); box-shadow:inset 3px 0 0 var(--ac); }
+    .tg-item.on .ic { background:var(--ac); color:#10131c; }
+    .tg-lv { display:inline-flex; gap:3px; } .tg-lv b { width:6px; height:6px; border-radius:50%; background:rgba(255,255,255,.18); } .tg-lv b.f { background:var(--ac); }
+    .tg-detail { overflow-y:auto; padding:22px 26px 24px; animation:tgIn .25s ease-out; }
+    @keyframes tgIn { from { opacity:0; transform:translateX(10px); } to { opacity:1; transform:none; } }
+    .tg-d-top { display:flex; align-items:center; gap:12px; flex-wrap:wrap; }
+    .tg-d-name { font-family:'Black Han Sans', 'Noto Sans KR', sans-serif; font-weight:400; font-size:32px; color:var(--ac); transform:skewX(-6deg); text-shadow:2px 3px 0 rgba(0,0,0,.35); }
+    .tg-d-lv { font-size:12px; font-weight:700; color:var(--muted); display:inline-flex; align-items:center; gap:6px; padding:5px 10px; border-radius:999px; background:rgba(255,255,255,.06); }
+    .tg-keys { display:flex; align-items:center; flex-wrap:wrap; gap:8px; margin-top:14px; }
+    .tg-key { min-width:44px; height:44px; padding:0 12px; display:inline-flex; align-items:center; justify-content:center; border-radius:11px; font-family:var(--font-display); font-weight:700; font-size:17px; color:#fff;
+      background:linear-gradient(180deg, #2a3854, #1a2438); border:1px solid rgba(255,255,255,.22); box-shadow:0 4px 0 #0a1020, inset 0 1px 0 rgba(255,255,255,.18); }
+    .tg-key.ac { background:var(--ac); color:#10131c; border-color:transparent; box-shadow:0 4px 0 rgba(0,0,0,.45), inset 0 1px 0 rgba(255,255,255,.5); }
+    .tg-op { font-size:13px; font-weight:700; color:var(--muted); }
+    .tg-fig { margin-top:18px; border-radius:18px; overflow:hidden; border:1px solid var(--line); background:#141c2c; }
+    .tg-fig svg { display:block; width:100%; height:auto; max-height:300px; }
+    .tg-desc { margin-top:16px; font-size:15px; line-height:1.65; color:#dfe6f1; }
+    .tg-tip { margin-top:14px; display:flex; gap:10px; align-items:flex-start; padding:12px 14px; border-radius:14px; font-size:13.5px; line-height:1.55; color:var(--text); background:rgba(255,255,255,.05); border:1px solid var(--line); border-left:3px solid var(--ac); }
+    .tg-ctrl { display:grid; grid-template-columns:repeat(2, minmax(0,1fr)); gap:10px; margin-top:16px; }
+    .tg-ctrl > div { display:flex; align-items:center; gap:12px; padding:10px 12px; border-radius:14px; background:rgba(255,255,255,.05); border:1px solid var(--line); font-weight:700; font-size:14px; }
+    .tg-ctrl .ks { display:flex; gap:5px; } .tg-ctrl .tg-key { min-width:38px; height:38px; font-size:14px; padding:0 9px; }
+    .tg-nav-btns { display:flex; justify-content:space-between; gap:10px; margin-top:20px; }
+    .tg-nav-btns button { padding:11px 18px; border-radius:14px; font-weight:800; font-size:14px; cursor:pointer; }
+    .tg-nav-btns button:disabled { opacity:.35; cursor:default; }
+    @media (max-width: 720px) {
+      .tg-main { grid-template-columns:1fr; grid-template-rows:auto 1fr; }
+      .tg-nav { flex-direction:row; overflow-x:auto; overflow-y:hidden; border-right:0; border-bottom:1px solid var(--line); padding:10px; }
+      .tg-item { width:auto; flex:none; padding:8px 10px; } .tg-item .tg-lv { display:none; }
+      .tg-detail { padding:16px; } .tg-ctrl { grid-template-columns:1fr; } .tg-prog { display:none; }
+    }
 
     /* ===== 모바일 터치 조작 모드 ===== */
     #touchToggle { position: fixed; left: 74px; bottom: 138px; z-index: 25; width: 46px; height: 46px; border-radius: 50%; display: flex; align-items: center; justify-content: center; color: #fff; background: rgba(10,16,28,.62); border: 2px solid rgba(255,255,255,.35); backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px); cursor: pointer; touch-action: manipulation; -webkit-tap-highlight-color: transparent; transition: background .15s, border-color .15s, color .15s; }
@@ -467,26 +532,17 @@
 
     <!-- 시작 메뉴 -->
     <div id="startMenu" class="fixed inset-0 z-40 flex items-center transition-opacity duration-300" style="background:linear-gradient(90deg,rgba(6,10,20,.84) 0%,rgba(6,10,20,.55) 48%,rgba(6,10,20,0) 85%)">
-      <div class="px-6 sm:px-14 max-w-3xl w-full" style="max-height:100vh;overflow-y:auto;padding-top:16px;padding-bottom:16px">
-        <div class="lbl" style="letter-spacing:.2em">3D KART RACING</div>
-        <h1 class="game-title mt-4" aria-label="꾸덕꾸덕라이더"><span class="gt-a">꾸덕꾸덕</span><span class="gt-b">라이더</span></h1>
-        <p class="mt-3 text-sm sm:text-base" style="color:var(--muted)">드리프트로 꾸덕하게 미끄러지는 3D 카트 레이스</p>
-        <div class="flex items-center gap-3 mt-7 flex-nowrap">
-        <button id="startBtn" type="button" class="primary-btn rounded-2xl px-9 py-4 text-lg font-display tracking-wider cursor-pointer inline-flex items-center gap-3">타임어택 <svg viewBox="0 0 24 24" width="18" height="18" fill="currentColor"><path d="M7 4v16l13-8z"/></svg></button>
-        <button id="mpBtn" type="button" class="primary-btn sky-btn rounded-2xl px-9 py-4 text-lg font-display tracking-wider cursor-pointer inline-flex items-center gap-3">멀티플레이 <svg viewBox="0 0 24 24" width="18" height="18" fill="currentColor"><path d="M7 4v16l13-8z"/></svg></button>
-          <button id="helpBtn" type="button" class="help-btn" aria-label="테크닉 설명 보기" title="테크닉 설명">?</button>
-          <button id="vehBtn" type="button" class="hanger-btn" aria-label="탈것 바꾸기" title="탈것 바꾸기"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 17h2c.6 0 1-.4 1-1v-3c0-.9-.7-1.7-1.5-1.9C18.7 10.6 16 10 16 10s-1.3-1.4-2.2-2.3c-.5-.4-1.1-.7-1.8-.7H5c-.6 0-1.1.4-1.4.9l-1.4 2.9A3.7 3.7 0 0 0 2 12v4c0 .6.4 1 1 1h2"/><circle cx="7" cy="17" r="2"/><path d="M9 17h6"/><circle cx="17" cy="17" r="2"/></svg></button>
-          <button id="settingsBtn" type="button" class="gear-btn" aria-label="설정" title="설정"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg></button>
-
+      <div class="mm">
+        <h1 class="game-title" aria-label="꾸덕꾸덕라이더"><span class="gt-a">꾸덕꾸덕</span><span class="gt-b">라이더</span></h1>
+        <div class="mm-main">
+          <button id="startBtn" type="button" class="mm-btn mm-ta"><span class="mm-in"><span class="mm-ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="13.5" r="7.5"/><path d="M12 13.5V9.5M9.5 2.5h5M19 6l-1.6 1.6"/></svg></span><span class="mm-tx">타임어택</span><span class="mm-go"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M7 4v16l13-8z"/></svg></span></span></button>
+          <button id="mpBtn" type="button" class="mm-btn mm-mp"><span class="mm-in"><span class="mm-ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="8" r="3.4"/><path d="M2.8 20c.6-3.4 3.2-5.6 6.2-5.6s5.6 2.2 6.2 5.6"/><circle cx="17" cy="9" r="2.6"/><path d="M16 14.6c2.8-.3 4.9 1.6 5.4 4.6"/></svg></span><span class="mm-tx">멀티플레이</span><span class="mm-go"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M7 4v16l13-8z"/></svg></span></span></button>
         </div>
-        <div class="text-xs mt-2.5" style="color:var(--muted)">Enter 또는 Space 키로도 타임어택을 시작해요 (시작 후 트랙 선택)</div>
-        <div class="glass rounded-2xl p-4 mt-7 grid grid-cols-2 gap-x-6 gap-y-2.5 text-[13px]" style="color:var(--muted)">
-          <div class="flex items-center gap-2.5"><span class="keyhint">WASD</span>가속 · 조향</div>
-          <div class="flex items-center gap-2.5"><span class="keyhint">Shift</span>드리프트</div>
-          <div class="flex items-center gap-2.5"><span class="keyhint">Ctrl</span>부스터</div>
-          <div class="flex items-center gap-2.5"><span class="keyhint">C / R</span>시점 · 복귀</div>
+        <div class="mm-sub">
+          <button id="vehBtn" type="button" class="mm-tile" aria-label="차고"><span class="mm-in"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 17h2c.6 0 1-.4 1-1v-3c0-.9-.7-1.7-1.5-1.9C18.7 10.6 16 10 16 10s-1.3-1.4-2.2-2.3c-.5-.4-1.1-.7-1.8-.7H5c-.6 0-1.1.4-1.4.9l-1.4 2.9A3.7 3.7 0 0 0 2 12v4c0 .6.4 1 1 1h2"/><circle cx="7" cy="17" r="2"/><path d="M9 17h6"/><circle cx="17" cy="17" r="2"/></svg><span>차고</span></span></button>
+          <button id="helpBtn" type="button" class="mm-tile" aria-label="테크닉 가이드"><span class="mm-in"><span class="mm-q">?</span><span>테크닉</span></span></button>
+          <button id="settingsBtn" type="button" class="mm-tile mm-gear" aria-label="설정"><span class="mm-in"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg><span>설정</span></span></button>
         </div>
-        <div class="mt-4 text-[13px] font-medium amber">출발 신호 “1”~GO 사이에 W를 누르면 출발 부스터!</div>
       </div>
     </div>
 
@@ -662,19 +718,23 @@
     </div>
 
     <div id="mpRank"></div>
-    <div id="techModal" class="fixed inset-0 z-50 items-center justify-center p-3 sm:p-6" style="background:rgba(4,8,16,.72);backdrop-filter:blur(6px)" role="dialog" aria-modal="true" aria-label="테크닉 설명">
-      <div class="glass animate-modal-pop rounded-3xl w-full max-w-4xl max-h-[90vh] flex flex-col" style="background:rgba(12,18,32,.92);max-height:92dvh">
-        <div class="flex items-center justify-between px-5 sm:px-7 pt-5 pb-3">
-          <div><div class="lbl" style="letter-spacing:.16em">DRIVING TECHNIQUES</div><h2 class="font-display text-2xl font-bold mt-1.5">테크닉 가이드</h2></div>
+    <div id="techModal" class="fixed inset-0 z-50 items-center justify-center p-3 sm:p-6" style="background:rgba(4,8,16,.72);backdrop-filter:blur(6px)" role="dialog" aria-modal="true" aria-label="테크닉 가이드">
+      <template data-tsvg="drift"><svg viewBox="0 0 160 110" role="img" aria-label="diagram"><rect width="160" height="110" fill="#141c2c"/><defs><marker id="ah1" viewBox="0 0 8 8" refX="6" refY="4" markerWidth="6" markerHeight="6" orient="auto"><path d="M0 0L8 4L0 8z" fill="#5ce1ff"/></marker></defs><rect x="0" y="0" width="160" height="26" fill="#1b2640"/><rect x="6" y="5" width="40" height="16" rx="4" fill="none" stroke="#ffb62e" stroke-opacity=".7"/><text x="26.0" y="16.5" font-size="9" font-weight="700" fill="#ffb62e" text-anchor="middle" font-family="sans-serif">Shift</text><text x="49" y="16.5" font-size="9" fill="#9aa4b5" font-family="sans-serif">+</text><rect x="58" y="5" width="36" height="16" rx="4" fill="none" stroke="#fff" stroke-opacity=".7"/><text x="76.0" y="16.5" font-size="9" font-weight="700" fill="#fff" text-anchor="middle" font-family="sans-serif">←/→</text><path d="M26 104 C26 76 48 58 80 54" stroke="#fff" stroke-opacity=".2" stroke-width="6" fill="none" stroke-linecap="round"/><path d="M34 104 C34 78 56 60 128 56" fill="none" stroke="#5ce1ff" stroke-width="2.5" stroke-dasharray="5 4" marker-end="url(#ah1)"/><g transform="translate(86 60) rotate(-78)"><rect x="-7" y="-12" width="14" height="24" rx="4" fill="#ffb62e"/><rect x="-5" y="-9" width="10" height="6" rx="2" fill="#1a1200" opacity=".55"/></g></svg></template>
+      <template data-tsvg="drag"><svg viewBox="0 0 160 110" role="img" aria-label="diagram"><rect width="160" height="110" fill="#141c2c"/><defs><marker id="ah3" viewBox="0 0 8 8" refX="6" refY="4" markerWidth="6" markerHeight="6" orient="auto"><path d="M0 0L8 4L0 8z" fill="#ffb62e"/></marker></defs><rect x="0" y="0" width="160" height="26" fill="#1b2640"/><rect x="6" y="5" width="40" height="16" rx="4" fill="none" stroke="#ffb62e" stroke-opacity=".7"/><text x="26.0" y="16.5" font-size="9" font-weight="700" fill="#ffb62e" text-anchor="middle" font-family="sans-serif">Shift</text><text x="49" y="16.5" font-size="9" fill="#9aa4b5" font-family="sans-serif">짧게</text><text x="72" y="16.5" font-size="9" fill="#9aa4b5" font-family="sans-serif">→</text><rect x="85" y="5" width="62" height="16" rx="4" fill="none" stroke="#fff" stroke-opacity=".7"/><text x="116.0" y="16.5" font-size="9" font-weight="700" fill="#fff" text-anchor="middle" font-family="sans-serif">←/→ 유지</text><path d="M70 114 C 72 86, 82 62, 128 44" fill="none" stroke="#fff" stroke-opacity=".09" stroke-width="26" stroke-linecap="round"/><path d="M70 106 C 72 84, 82 62, 122 46" fill="none" stroke="#ffb62e" stroke-width="2.5" stroke-dasharray="5 4" marker-end="url(#ah3)"/><g transform="translate(82 74) rotate(37)"><rect x="-7" y="-12" width="14" height="24" rx="4" fill="#ffb62e"/><rect x="-5" y="-9" width="10" height="6" rx="2" fill="#1a1200" opacity=".55"/></g></svg></template>
+      <template data-tsvg="double"><svg viewBox="0 0 160 110" role="img" aria-label="diagram"><rect width="160" height="110" fill="#141c2c"/><defs><marker id="ah2" viewBox="0 0 8 8" refX="6" refY="4" markerWidth="6" markerHeight="6" orient="auto"><path d="M0 0L8 4L0 8z" fill="#f0a6ff"/></marker></defs><rect x="0" y="0" width="160" height="26" fill="#1b2640"/><rect x="6" y="5" width="40" height="16" rx="4" fill="none" stroke="#ffb62e" stroke-opacity=".7"/><text x="26.0" y="16.5" font-size="9" font-weight="700" fill="#ffb62e" text-anchor="middle" font-family="sans-serif">Shift</text><text x="49" y="16.5" font-size="9" fill="#9aa4b5" font-family="sans-serif">+</text><rect x="58" y="5" width="20" height="16" rx="4" fill="none" stroke="#fff" stroke-opacity=".7"/><text x="68.0" y="16.5" font-size="9" font-weight="700" fill="#fff" text-anchor="middle" font-family="sans-serif">→</text><rect x="81" y="5" width="20" height="16" rx="4" fill="none" stroke="#f0a6ff" stroke-opacity=".7"/><text x="91.0" y="16.5" font-size="9" font-weight="700" fill="#f0a6ff" text-anchor="middle" font-family="sans-serif">→</text><path d="M34 106 C34 70 52 48 92 48 C116 48 128 60 126 90" fill="none" stroke="#f0a6ff" stroke-width="2.5" stroke-dasharray="5 4" marker-end="url(#ah2)"/><g transform="translate(92 50) rotate(-85)"><rect x="-7" y="-12" width="14" height="24" rx="4" fill="#f0a6ff"/><rect x="-5" y="-9" width="10" height="6" rx="2" fill="#1a1200" opacity=".55"/></g><text x="10" y="62" font-size="13" font-weight="700" fill="#f0a6ff" font-family="sans-serif">×2</text></svg></template>
+      <template data-tsvg="cut"><svg viewBox="0 0 160 110" role="img" aria-label="diagram"><rect width="160" height="110" fill="#141c2c"/><defs><marker id="ah4" viewBox="0 0 8 8" refX="6" refY="4" markerWidth="6" markerHeight="6" orient="auto"><path d="M0 0L8 4L0 8z" fill="#5ce1ff"/></marker></defs><rect x="0" y="0" width="160" height="26" fill="#1b2640"/><rect x="6" y="5" width="40" height="16" rx="4" fill="none" stroke="#ffb62e" stroke-opacity=".7"/><text x="26.0" y="16.5" font-size="9" font-weight="700" fill="#ffb62e" text-anchor="middle" font-family="sans-serif">Shift</text><text x="49" y="16.5" font-size="9" fill="#9aa4b5" font-family="sans-serif">+</text><rect x="58" y="5" width="20" height="16" rx="4" fill="none" stroke="#fff" stroke-opacity=".7"/><text x="68.0" y="16.5" font-size="9" font-weight="700" fill="#fff" text-anchor="middle" font-family="sans-serif">→</text><text x="81" y="16.5" font-size="9" fill="#9aa4b5" font-family="sans-serif">+</text><rect x="90" y="5" width="20" height="16" rx="4" fill="none" stroke="#5ce1ff" stroke-opacity=".7"/><text x="100.0" y="16.5" font-size="9" font-weight="700" fill="#5ce1ff" text-anchor="middle" font-family="sans-serif">←</text><path d="M54 106 L114 40" fill="none" stroke="#5ce1ff" stroke-width="2.5" stroke-dasharray="5 4" marker-end="url(#ah4)"/><g transform="translate(84 74) rotate(-28)"><rect x="-7" y="-12" width="14" height="24" rx="4" fill="#5ce1ff"/><rect x="-5" y="-9" width="10" height="6" rx="2" fill="#1a1200" opacity=".55"/></g><path d="M30 66 C20 76 20 90 30 98" fill="none" stroke="#ff7a8a" stroke-width="2" marker-end="url(#ah4r)"/><defs><marker id="ah4r" viewBox="0 0 8 8" refX="6" refY="4" markerWidth="6" markerHeight="6" orient="auto"><path d="M0 0L8 4L0 8z" fill="#ff7a8a"/></marker></defs></svg></template>
+      <template data-tsvg="instant"><svg viewBox="0 0 160 110" role="img" aria-label="diagram"><rect width="160" height="110" fill="#141c2c"/><defs><marker id="ah5" viewBox="0 0 8 8" refX="6" refY="4" markerWidth="6" markerHeight="6" orient="auto"><path d="M0 0L8 4L0 8z" fill="#ffb62e"/></marker></defs><rect x="0" y="0" width="160" height="26" fill="#1b2640"/><rect x="6" y="5" width="16" height="16" rx="4" fill="none" stroke="#ffb62e" stroke-opacity=".7"/><text x="14.0" y="16.5" font-size="9" font-weight="700" fill="#ffb62e" text-anchor="middle" font-family="sans-serif">W</text><text x="25" y="16.5" font-size="9" fill="#9aa4b5" font-family="sans-serif">뗐다</text><text x="48" y="16.5" font-size="9" fill="#9aa4b5" font-family="sans-serif">→</text><rect x="61" y="5" width="16" height="16" rx="4" fill="none" stroke="#ffb62e" stroke-opacity=".7"/><text x="69.0" y="16.5" font-size="9" font-weight="700" fill="#ffb62e" text-anchor="middle" font-family="sans-serif">W</text><rect x="10" y="58" width="60" height="10" rx="5" fill="#ffb62e"/><rect x="70" y="58" width="80" height="10" rx="5" fill="#5ce1ff" opacity=".6"/><text x="10" y="50" font-size="8" font-weight="700" fill="#ffb62e" font-family="sans-serif">25°+ 드리프트</text><line x1="70" y1="54" x2="70" y2="72" stroke="#fff" stroke-opacity=".7"/><text x="66" y="84" font-size="8" fill="#cfd6e3" text-anchor="end" font-family="sans-serif">종료</text><text x="76" y="84" font-size="8" font-weight="700" fill="#5ce1ff" font-family="sans-serif">1.5초 이내</text><path d="M126 92 l8 -13 l3 7 l8 -2 l-9 17z" fill="#ff8a2e"/></svg></template>
+      <template data-tsvg="gauge"><svg viewBox="0 0 160 110" role="img" aria-label="diagram"><rect width="160" height="110" fill="#141c2c"/><defs><marker id="ah6" viewBox="0 0 8 8" refX="6" refY="4" markerWidth="6" markerHeight="6" orient="auto"><path d="M0 0L8 4L0 8z" fill="#ffb62e"/></marker></defs><rect x="0" y="0" width="160" height="26" fill="#1b2640"/><rect x="6" y="5" width="34" height="16" rx="4" fill="none" stroke="#ffb62e" stroke-opacity=".7"/><text x="23.0" y="16.5" font-size="9" font-weight="700" fill="#ffb62e" text-anchor="middle" font-family="sans-serif">Ctrl</text><text x="43" y="16.5" font-size="9" fill="#9aa4b5" font-family="sans-serif">발동</text><text x="14" y="50" font-size="9" font-weight="700" fill="#fff" font-family="sans-serif">BOOSTER</text><rect x="14" y="56" width="132" height="12" rx="6" fill="#26324a"/><rect x="14" y="56" width="92" height="12" rx="6" fill="#ff7a2e"/><path d="M118 78 l9 -13 l3 7 l9 -2 l-10 17z" fill="#ff8a2e"/></svg></template>
+      <template data-tsvg="start"><svg viewBox="0 0 160 110" role="img" aria-label="diagram"><rect width="160" height="110" fill="#141c2c"/><rect x="34" y="20" width="92" height="34" rx="12" fill="#0b1220" stroke="#2a3854"/><circle cx="56" cy="37" r="9" fill="#ff4d5e"/><circle cx="80" cy="37" r="9" fill="#ff4d5e"/><circle cx="104" cy="37" r="9" fill="#34f08a"/><text x="80" y="76" text-anchor="middle" font-family="Chakra Petch, sans-serif" font-weight="700" font-size="15" fill="#fff">1 … GO!</text><rect x="58" y="84" width="44" height="16" rx="5" fill="#ff6fae"/><text x="80" y="96" text-anchor="middle" font-family="Chakra Petch, sans-serif" font-weight="700" font-size="11" fill="#1a0010">W 꾹!</text></svg></template>
+      <div class="tg animate-modal-pop">
+        <div class="tg-head">
+          <h2 class="tg-title">테크닉 가이드</h2>
+          <div class="tg-prog" id="tgProg"></div>
           <button id="techClose" type="button" class="ctrl-btn" style="width:40px;height:40px" aria-label="닫기">✕</button>
         </div>
-        <div class="overflow-y-auto px-5 sm:px-7 pb-6 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3.5" style="pointer-events:auto;min-height:0;grid-auto-rows:max-content;align-content:start">
-<div class="tech-card"><svg viewBox="0 0 160 110" role="img" aria-label="diagram"><rect width="160" height="110" fill="#141c2c"/><defs><marker id="ah1" viewBox="0 0 8 8" refX="6" refY="4" markerWidth="6" markerHeight="6" orient="auto"><path d="M0 0L8 4L0 8z" fill="#5ce1ff"/></marker></defs><rect x="0" y="0" width="160" height="26" fill="#1b2640"/><rect x="6" y="5" width="40" height="16" rx="4" fill="none" stroke="#ffb62e" stroke-opacity=".7"/><text x="26.0" y="16.5" font-size="9" font-weight="700" fill="#ffb62e" text-anchor="middle" font-family="sans-serif">Shift</text><text x="49" y="16.5" font-size="9" fill="#9aa4b5" font-family="sans-serif">+</text><rect x="58" y="5" width="36" height="16" rx="4" fill="none" stroke="#fff" stroke-opacity=".7"/><text x="76.0" y="16.5" font-size="9" font-weight="700" fill="#fff" text-anchor="middle" font-family="sans-serif">←/→</text><path d="M26 104 C26 76 48 58 80 54" stroke="#fff" stroke-opacity=".2" stroke-width="6" fill="none" stroke-linecap="round"/><path d="M34 104 C34 78 56 60 128 56" fill="none" stroke="#5ce1ff" stroke-width="2.5" stroke-dasharray="5 4" marker-end="url(#ah1)"/><g transform="translate(86 60) rotate(-78)"><rect x="-7" y="-12" width="14" height="24" rx="4" fill="#ffb62e"/><rect x="-5" y="-9" width="10" height="6" rx="2" fill="#1a1200" opacity=".55"/></g></svg><div class="body"><h3>드리프트</h3><div class="how"><span class="keyhint">Shift</span> + <span class="keyhint">←</span>/<span class="keyhint">→</span></div>Shift를 누르고 방향키로 차체를 비틀며 코너를 돌아요. 드리프트하는 동안 부스터 게이지가 빠르게 충전됩니다.</div></div>
-<div class="tech-card"><svg viewBox="0 0 160 110" role="img" aria-label="diagram"><rect width="160" height="110" fill="#141c2c"/><defs><marker id="ah3" viewBox="0 0 8 8" refX="6" refY="4" markerWidth="6" markerHeight="6" orient="auto"><path d="M0 0L8 4L0 8z" fill="#ffb62e"/></marker></defs><rect x="0" y="0" width="160" height="26" fill="#1b2640"/><rect x="6" y="5" width="40" height="16" rx="4" fill="none" stroke="#ffb62e" stroke-opacity=".7"/><text x="26.0" y="16.5" font-size="9" font-weight="700" fill="#ffb62e" text-anchor="middle" font-family="sans-serif">Shift</text><text x="49" y="16.5" font-size="9" fill="#9aa4b5" font-family="sans-serif">짧게</text><text x="72" y="16.5" font-size="9" fill="#9aa4b5" font-family="sans-serif">→</text><rect x="85" y="5" width="62" height="16" rx="4" fill="none" stroke="#fff" stroke-opacity=".7"/><text x="116.0" y="16.5" font-size="9" font-weight="700" fill="#fff" text-anchor="middle" font-family="sans-serif">←/→ 유지</text><path d="M70 114 C 72 86, 82 62, 128 44" fill="none" stroke="#fff" stroke-opacity=".09" stroke-width="26" stroke-linecap="round"/><path d="M70 106 C 72 84, 82 62, 122 46" fill="none" stroke="#ffb62e" stroke-width="2.5" stroke-dasharray="5 4" marker-end="url(#ah3)"/><g transform="translate(82 74) rotate(37)"><rect x="-7" y="-12" width="14" height="24" rx="4" fill="#ffb62e"/><rect x="-5" y="-9" width="10" height="6" rx="2" fill="#1a1200" opacity=".55"/></g></svg><div class="body"><h3><span class="badge badge-drag">끌기</span></h3><div class="how"><span class="keyhint">←</span>/<span class="keyhint">→</span> 누른 채 <span class="keyhint">Shift</span> 떼기</div>드리프트 중 드리프트 방향의 방향키를 누른 채 Shift를 떼면 끌기로 이어지고, 키를 누르고 있는 동안 차체가 옆으로 미끄러지며 넓고 완만한 곡선을 그려요.</div></div>
-<div class="tech-card"><svg viewBox="0 0 160 110" role="img" aria-label="diagram"><rect width="160" height="110" fill="#141c2c"/><defs><marker id="ah2" viewBox="0 0 8 8" refX="6" refY="4" markerWidth="6" markerHeight="6" orient="auto"><path d="M0 0L8 4L0 8z" fill="#f0a6ff"/></marker></defs><rect x="0" y="0" width="160" height="26" fill="#1b2640"/><rect x="6" y="5" width="40" height="16" rx="4" fill="none" stroke="#ffb62e" stroke-opacity=".7"/><text x="26.0" y="16.5" font-size="9" font-weight="700" fill="#ffb62e" text-anchor="middle" font-family="sans-serif">Shift</text><text x="49" y="16.5" font-size="9" fill="#9aa4b5" font-family="sans-serif">+</text><rect x="58" y="5" width="20" height="16" rx="4" fill="none" stroke="#fff" stroke-opacity=".7"/><text x="68.0" y="16.5" font-size="9" font-weight="700" fill="#fff" text-anchor="middle" font-family="sans-serif">→</text><rect x="81" y="5" width="20" height="16" rx="4" fill="none" stroke="#f0a6ff" stroke-opacity=".7"/><text x="91.0" y="16.5" font-size="9" font-weight="700" fill="#f0a6ff" text-anchor="middle" font-family="sans-serif">→</text><path d="M34 106 C34 70 52 48 92 48 C116 48 128 60 126 90" fill="none" stroke="#f0a6ff" stroke-width="2.5" stroke-dasharray="5 4" marker-end="url(#ah2)"/><g transform="translate(92 50) rotate(-85)"><rect x="-7" y="-12" width="14" height="24" rx="4" fill="#f0a6ff"/><rect x="-5" y="-9" width="10" height="6" rx="2" fill="#1a1200" opacity=".55"/></g><text x="10" y="62" font-size="13" font-weight="700" fill="#f0a6ff" font-family="sans-serif">×2</text></svg><div class="body"><h3><span class="badge badge-double">더블 드리프트</span></h3><div class="how"><span class="keyhint">Shift</span> 드리프트 중 같은 방향키 한 번 더</div>드리프트 중에 같은 방향키를 한 번 더(0.45초 이내) 누르면 방향전환률이 올라가 더 날카롭게 꺾이고, 0.55초가 지나면 한 번 더 상승해요.</div></div>
-<div class="tech-card"><svg viewBox="0 0 160 110" role="img" aria-label="diagram"><rect width="160" height="110" fill="#141c2c"/><defs><marker id="ah4" viewBox="0 0 8 8" refX="6" refY="4" markerWidth="6" markerHeight="6" orient="auto"><path d="M0 0L8 4L0 8z" fill="#5ce1ff"/></marker></defs><rect x="0" y="0" width="160" height="26" fill="#1b2640"/><rect x="6" y="5" width="40" height="16" rx="4" fill="none" stroke="#ffb62e" stroke-opacity=".7"/><text x="26.0" y="16.5" font-size="9" font-weight="700" fill="#ffb62e" text-anchor="middle" font-family="sans-serif">Shift</text><text x="49" y="16.5" font-size="9" fill="#9aa4b5" font-family="sans-serif">+</text><rect x="58" y="5" width="20" height="16" rx="4" fill="none" stroke="#fff" stroke-opacity=".7"/><text x="68.0" y="16.5" font-size="9" font-weight="700" fill="#fff" text-anchor="middle" font-family="sans-serif">→</text><text x="81" y="16.5" font-size="9" fill="#9aa4b5" font-family="sans-serif">+</text><rect x="90" y="5" width="20" height="16" rx="4" fill="none" stroke="#5ce1ff" stroke-opacity=".7"/><text x="100.0" y="16.5" font-size="9" font-weight="700" fill="#5ce1ff" text-anchor="middle" font-family="sans-serif">←</text><path d="M54 106 L114 40" fill="none" stroke="#5ce1ff" stroke-width="2.5" stroke-dasharray="5 4" marker-end="url(#ah4)"/><g transform="translate(84 74) rotate(-28)"><rect x="-7" y="-12" width="14" height="24" rx="4" fill="#5ce1ff"/><rect x="-5" y="-9" width="10" height="6" rx="2" fill="#1a1200" opacity=".55"/></g><path d="M30 66 C20 76 20 90 30 98" fill="none" stroke="#ff7a8a" stroke-width="2" marker-end="url(#ah4r)"/><defs><marker id="ah4r" viewBox="0 0 8 8" refX="6" refY="4" markerWidth="6" markerHeight="6" orient="auto"><path d="M0 0L8 4L0 8z" fill="#ff7a8a"/></marker></defs></svg><div class="body"><h3><span class="badge badge-cut">뉴커팅</span></h3><div class="how"><span class="keyhint">Shift</span> 드리프트 중 <b>반대</b> 방향키</div>드리프트 중에 반대 방향키를 누르면 차체가 틀어진 채로 직진해요. 게이지 충전 속도가 가장 빨라 순간부스터를 크게 노릴 수 있어요.</div></div>
-<div class="tech-card"><svg viewBox="0 0 160 110" role="img" aria-label="diagram"><rect width="160" height="110" fill="#141c2c"/><defs><marker id="ah5" viewBox="0 0 8 8" refX="6" refY="4" markerWidth="6" markerHeight="6" orient="auto"><path d="M0 0L8 4L0 8z" fill="#ffb62e"/></marker></defs><rect x="0" y="0" width="160" height="26" fill="#1b2640"/><rect x="6" y="5" width="16" height="16" rx="4" fill="none" stroke="#ffb62e" stroke-opacity=".7"/><text x="14.0" y="16.5" font-size="9" font-weight="700" fill="#ffb62e" text-anchor="middle" font-family="sans-serif">W</text><text x="25" y="16.5" font-size="9" fill="#9aa4b5" font-family="sans-serif">뗐다</text><text x="48" y="16.5" font-size="9" fill="#9aa4b5" font-family="sans-serif">→</text><rect x="61" y="5" width="16" height="16" rx="4" fill="none" stroke="#ffb62e" stroke-opacity=".7"/><text x="69.0" y="16.5" font-size="9" font-weight="700" fill="#ffb62e" text-anchor="middle" font-family="sans-serif">W</text><rect x="10" y="58" width="60" height="10" rx="5" fill="#ffb62e"/><rect x="70" y="58" width="80" height="10" rx="5" fill="#5ce1ff" opacity=".6"/><text x="10" y="50" font-size="8" font-weight="700" fill="#ffb62e" font-family="sans-serif">25°+ 드리프트</text><line x1="70" y1="54" x2="70" y2="72" stroke="#fff" stroke-opacity=".7"/><text x="66" y="84" font-size="8" fill="#cfd6e3" text-anchor="end" font-family="sans-serif">종료</text><text x="76" y="84" font-size="8" font-weight="700" fill="#5ce1ff" font-family="sans-serif">1.5초 이내</text><path d="M126 92 l8 -13 l3 7 l8 -2 l-9 17z" fill="#ff8a2e"/></svg><div class="body"><h3><span class="badge badge-boost">순간부스터</span></h3><div class="how">25° 이상 드리프트 종료 → 1.5초 내 <span class="keyhint">W</span> 뗐다 누르기</div>충분히 꺾은 드리프트를 끝낸 직후 타이밍 좋게 가속키를 뗐다 누르면 짧고 강한 부스트가 터져요.</div></div>
-<div class="tech-card"><svg viewBox="0 0 160 110" role="img" aria-label="diagram"><rect width="160" height="110" fill="#141c2c"/><defs><marker id="ah6" viewBox="0 0 8 8" refX="6" refY="4" markerWidth="6" markerHeight="6" orient="auto"><path d="M0 0L8 4L0 8z" fill="#ffb62e"/></marker></defs><rect x="0" y="0" width="160" height="26" fill="#1b2640"/><rect x="6" y="5" width="34" height="16" rx="4" fill="none" stroke="#ffb62e" stroke-opacity=".7"/><text x="23.0" y="16.5" font-size="9" font-weight="700" fill="#ffb62e" text-anchor="middle" font-family="sans-serif">Ctrl</text><text x="43" y="16.5" font-size="9" fill="#9aa4b5" font-family="sans-serif">발동</text><text x="14" y="50" font-size="9" font-weight="700" fill="#fff" font-family="sans-serif">BOOSTER</text><rect x="14" y="56" width="132" height="12" rx="6" fill="#26324a"/><rect x="14" y="56" width="92" height="12" rx="6" fill="#ff7a2e"/><path d="M118 78 l9 -13 l3 7 l9 -2 l-10 17z" fill="#ff8a2e"/></svg><div class="body"><h3>부스터 게이지</h3><div class="how"><span class="keyhint">Ctrl</span> 로 발동</div>직진해도 자동 충전되고, 드리프트(33) &lt; 더블 드리프트(36) &lt; 뉴커팅(39) 순으로 더 빨리 차올라요. 모이면 Ctrl로 사용!</div></div>
+        <div class="tg-main">
+          <nav class="tg-nav" id="tgNav" aria-label="테크닉 목록"></nav>
+          <section class="tg-detail" id="tgDetail" aria-live="polite"></section>
         </div>
       </div>
     </div>
@@ -8436,7 +8496,61 @@
     })();
     (() => {
       const m = document.getElementById('techModal');
-      const open = () => m.classList.add('open');
+      // ---- 테크닉 가이드 데이터 ----
+      const K = (t, ac) => '<span class="tg-key' + (ac ? ' ac' : '') + '">' + t + '</span>', OP = (t) => '<span class="tg-op">' + t + '</span>';
+      const TECH = [
+        { id: 'ctrl', icon: '🎮', name: '기본 조작', lv: 1, ac: '#e8edf5', ctrl: true,
+          desc: '키보드로 달리는 기본 조작이에요. 모바일에서는 화면 버튼으로 똑같이 조작할 수 있어요.',
+          tip: '메인 메뉴에서 Enter 또는 Space를 누르면 바로 타임어택 트랙 선택으로 넘어가요.' },
+        { id: 'start', icon: '🚦', name: '출발 부스터', lv: 1, ac: '#ff6fae', keys: [K('1'), OP('~'), K('GO'), OP('사이에'), K('W', 1)],
+          desc: '출발 카운트다운이 "1"을 지나 GO가 뜨기 직전, 짧은 타이밍에 가속키(W)를 누르면 출발과 동시에 부스터가 터져요.',
+          tip: 'GO 직후 0.18초 안에 눌러도 성공해요. 너무 일찍 꾹 누르고 있으면 실패하니 타이밍을 노려 보세요!' },
+        { id: 'drift', icon: '🌀', name: '드리프트', lv: 1, ac: '#7cffc4', keys: [K('Shift', 1), OP('+'), K('←'), OP('/'), K('→')],
+          desc: 'Shift를 누르고 방향키로 차체를 비틀며 코너를 돌아요. 드리프트하는 동안 부스터 게이지가 빠르게 충전돼요.',
+          tip: '코너 진입 직전에 짧게 시작하고, 코너를 빠져나올 때 끊어 주면 속도 손실이 적어요.' },
+        { id: 'drag', icon: '〰️', name: '끌기', lv: 2, ac: '#ffb62e', keys: [K('←'), OP('/'), K('→'), OP('누른 채'), K('Shift', 1), OP('떼기')],
+          desc: '드리프트 중 드리프트 방향의 방향키를 누른 채 Shift만 떼면 끌기로 이어져요. 방향키를 누르고 있는 동안 차체가 옆으로 미끄러지며 넓고 완만한 곡선을 그려요.',
+          tip: '방향키를 떼거나 반대키를 누르면 끌기가 끝나요. 긴 곡선 구간에서 쓰면 좋아요.' },
+        { id: 'double', icon: '⚡', name: '더블 드리프트', lv: 2, ac: '#f0a6ff', keys: [K('Shift', 1), OP('드리프트 중'), K('→'), K('→', 1)],
+          desc: '드리프트 중에 같은 방향키를 한 번 더(0.45초 이내) 누르면 방향전환률이 올라가 더 날카롭게 꺾여요.',
+          tip: '급커브·헤어핀에서 특히 강력해요. 게이지 충전도 일반 드리프트보다 조금 더 빨라요.' },
+        { id: 'cut', icon: '✂️', name: '뉴커팅', lv: 3, ac: '#5ce1ff', keys: [K('Shift', 1), OP('+'), K('→'), OP('누른 채'), K('←', 1)],
+          desc: '드리프트 방향키를 누른 채로 반대 방향키를 함께 누르면, 차체가 틀어진 채 그대로 직진해요. 게이지가 가장 빨리 차서 순간부스터를 크게 노릴 수 있어요.',
+          tip: '원래 방향키를 먼저 떼고 반대키로 바꾸면 뉴커팅이 아니라 반대 방향 드리프트가 돼요. 두 키를 꼭 함께 누르세요!' },
+        { id: 'instant', icon: '💥', name: '순간부스터', lv: 2, ac: '#ff9a4d', keys: [OP('25° 이상 드리프트 종료 →'), K('W'), OP('뗐다'), K('W', 1), OP('누르기')],
+          desc: '충분히 꺾은 드리프트를 끝낸 직후 1.5초 안에 가속키를 뗐다 다시 누르면 짧고 강한 부스트가 터져요.',
+          tip: '뉴커팅을 섞은 드리프트 뒤의 순간부스터는 더 길고 강해요.' },
+        { id: 'gauge', icon: '🔥', name: '부스터 게이지', lv: 1, ac: '#ffd24a', keys: [OP('게이지 가득 →'), K('Ctrl', 1)],
+          desc: '직진만 해도 자동으로 충전되고, 드리프트 < 더블 드리프트 < 뉴커팅 순으로 더 빨리 차올라요. 가득 차면 부스터가 생기고 Ctrl로 사용해요.',
+          tip: '드리프트 중 벽에 부딪히면 그 드리프트로 모은 게이지의 33%만 남아요. 벽을 조심하세요!' }
+      ];
+      const nav = document.getElementById('tgNav'), det = document.getElementById('tgDetail'), prog = document.getElementById('tgProg');
+      const svgOf = (id) => { const t = m.querySelector('template[data-tsvg="' + id + '"]'); return t ? t.innerHTML : ''; };
+      const lvHtml = (t) => '<span class="tg-lv">' + [1, 2, 3].map((n) => '<b class="' + (n <= t.lv ? 'f' : '') + '"></b>').join('') + '</span>';
+      nav.innerHTML = TECH.map((t, i) => '<button type="button" class="tg-item" data-i="' + i + '" style="--ac:' + t.ac + '"><span class="ic">' + t.icon + '</span><span class="nm">' + t.name + '</span>' + lvHtml(t) + '</button>').join('');
+      prog.innerHTML = TECH.map(() => '<i></i>').join('');
+      let cur = 0;
+      function show(i) {
+        cur = Math.max(0, Math.min(TECH.length - 1, i)); const t = TECH[cur];
+        nav.querySelectorAll('.tg-item').forEach((b, k) => b.classList.toggle('on', k === cur));
+        prog.querySelectorAll('i').forEach((b, k) => b.classList.toggle('on', k === cur));
+        const lvName = ['', '입문', '중급', '고급'][t.lv];
+        const body = t.ctrl
+          ? '<div class="tg-ctrl">' + [[['W', '↑'], '가속'], [['S', '↓'], '후진·브레이크'], [['A', 'D'], '조향'], [['Shift'], '드리프트'], [['Ctrl'], '부스터 사용'], [['C'], '시점 변경'], [['R'], '트랙 복귀'], [['P'], '일시정지']]
+              .map(([ks, l]) => '<div><span class="ks">' + ks.map((k) => K(k)).join('') + '</span>' + l + '</div>').join('') + '</div>'
+          : '<div class="tg-keys">' + t.keys.join('') + '</div><div class="tg-fig">' + svgOf(t.id) + '</div>';
+        det.style.setProperty('--ac', t.ac);
+        det.innerHTML = '<div class="tg-d-top"><div class="tg-d-name">' + t.name + '</div><span class="tg-d-lv">' + lvHtml(t) + lvName + '</span></div>' + body +
+          '<div class="tg-desc">' + t.desc + '</div><div class="tg-tip"><span>💡</span><span>' + t.tip + '</span></div>' +
+          '<div class="tg-nav-btns"><button type="button" class="glass" data-go="-1"' + (cur === 0 ? ' disabled' : '') + '>← 이전</button><button type="button" class="primary-btn" data-go="1"' + (cur === TECH.length - 1 ? ' disabled' : '') + '>다음 →</button></div>';
+        det.style.animation = 'none'; void det.offsetWidth; det.style.animation = '';
+        det.scrollTop = 0;
+        const on = nav.querySelector('.tg-item.on'); if (on && on.scrollIntoView) on.scrollIntoView({ block: 'nearest', inline: 'nearest' });
+      }
+      nav.addEventListener('click', (e) => { const b = e.target.closest('.tg-item'); if (b) show(+b.dataset.i); });
+      det.addEventListener('click', (e) => { const b = e.target.closest('[data-go]'); if (b && !b.disabled) show(cur + +b.dataset.go); });
+      show(0);
+      const open = () => { m.classList.add('open'); };
       const close = () => { m.classList.remove('open'); document.getElementById('gameContainer').focus(); };
       document.getElementById('helpBtn').addEventListener('click', open);
       document.getElementById('techClose').addEventListener('click', close);
@@ -8445,6 +8559,8 @@
       window.addEventListener('keydown', (e) => {
         if (!m.classList.contains('open')) return;
         if (e.code === 'Escape') close();
+        else if (e.code === 'ArrowDown' || e.code === 'ArrowRight') { e.preventDefault(); show(cur + 1); }
+        else if (e.code === 'ArrowUp' || e.code === 'ArrowLeft') { e.preventDefault(); show(cur - 1); }
         e.stopImmediatePropagation();
         if (e.code === 'Enter' || e.code === 'Space') e.preventDefault();
       }, true);
