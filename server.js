@@ -114,6 +114,16 @@ wss.on('connection', (ws) => {
     const me = r.players.get(ws.pid); if (!me) return;
 
     if (m.t === 'leave') return leave(ws);
+    // 파티 채팅: 80자, 5초에 5개까지 (클라이언트는 textContent로만 표시)
+    if (m.t === 'chat') {
+      const text = String(m.text == null ? '' : m.text).replace(/[\u0000-\u001f\u007f]/g, ' ').trim().slice(0, 80);
+      if (!text) return;
+      const now = Date.now();
+      me.chatTimes = (me.chatTimes || []).filter((t) => now - t < 5000);
+      if (me.chatTimes.length >= 5) return send(ws, { t: 'chatSlow' });
+      me.chatTimes.push(now);
+      return broadcast(r, { t: 'chat', id: ws.pid, name: me.name, text });
+    }
     if (m.t === 'veh') { me.v = clean(m.v, 20, 'kart'); return broadcast(r, roomMsg(r)); }
     if (m.t === 'state') {
       me.prog = num(m.p);
