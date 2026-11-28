@@ -132,6 +132,29 @@
     .veh-row { display:flex; flex-direction:row; flex-wrap:nowrap; gap:12px; justify-content:safe center; width:100%; max-width:760px; overflow-x:auto; padding:4px; }
     .veh-row .veh-card { flex:1 0 170px; min-width:170px; max-width:240px; }
     .veh-card { position:relative; }
+    /* 차고 (좌: 캐릭터/카트 목록, 우: 3D 미리보기) */
+    .garage { display:none; background:rgba(6,10,20,.78); backdrop-filter:blur(4px); }
+    .garage.flex { display:grid; grid-template-columns:minmax(300px, 42%) 1fr; }
+    .g-left { display:flex; flex-direction:column; min-height:0; padding:22px 26px 22px; overflow-y:auto; }
+    .g-tabs { display:inline-flex; align-self:flex-start; gap:4px; padding:4px; border-radius:14px; background:rgba(255,255,255,.08); border:1px solid rgba(255,255,255,.14); }
+    .g-tab { padding:9px 20px; border-radius:10px; font-weight:700; font-size:14px; color:var(--muted); cursor:pointer; transition:background .15s, color .15s; }
+    .g-tab:hover { color:var(--text); }
+    .g-tab.on { background:var(--amber); color:#1a1200; }
+    .g-list { display:grid; grid-template-columns:repeat(auto-fill, minmax(150px, 1fr)); gap:12px; margin-top:16px; align-content:start; }
+    .g-list.hidden { display:none; }
+    .g-right { position:relative; min-height:0; background:radial-gradient(ellipse at 50% 42%, #f4f7fb 0%, #dfe7f1 55%, #b9c6d6 100%); overflow:hidden; }
+    #garageCanvas { position:absolute; inset:0; width:100%; height:100%; display:block; cursor:grab; touch-action:none; }
+    #garageCanvas.drag { cursor:grabbing; }
+    .g-cap { position:absolute; left:50%; bottom:22px; transform:translateX(-50%); white-space:nowrap; padding:9px 18px; border-radius:999px; background:rgba(10,16,28,.82); font-weight:700; font-size:14px; pointer-events:none; }
+    .g-dot { margin:0 8px; color:var(--muted); }
+    .g-hint { position:absolute; right:16px; top:14px; font-size:11px; color:#4b5668; pointer-events:none; }
+    @media (max-width: 720px) and (orientation: portrait) {
+      .garage.flex { grid-template-columns:1fr; grid-template-rows:42% 1fr; }
+      .g-right { order:-1; }
+      .g-left { padding:16px; }
+      .g-list { grid-template-columns:repeat(2, 1fr); }
+    }
+    @media (max-height: 520px) { .g-left { padding:12px 18px; } .g-list { grid-template-columns:repeat(auto-fill, minmax(120px, 1fr)); gap:8px; margin-top:10px; } .g-list .vsub { display:none; } }
     .veh-info { position:absolute; top:16px; right:16px; z-index:4; width:26px; height:26px; border-radius:50%; background:#8a919d; color:#fff; display:flex; align-items:center; justify-content:center; font:800 15px/1 Georgia, 'Times New Roman', serif; font-style:italic; cursor:pointer; box-shadow:0 1px 4px rgba(0,0,0,.35); user-select:none; transition:background .15s, transform .15s; }
     .veh-info:hover { background:#6f7783; transform:scale(1.08); }
     .veh-info:focus-visible { outline:2px solid var(--amber); outline-offset:2px; }
@@ -153,6 +176,34 @@
     .gear-btn svg { width:28px; height:28px; }
     #settingsModal { display:none; }
     #settingsModal.open { display:flex; }
+    .set-toggle { flex:1; padding:10px 14px; border-radius:12px; font-family:var(--font-display); font-weight:700; font-size:14px; cursor:pointer; color:var(--muted); background:rgba(255,255,255,.07); border:1px solid rgba(255,255,255,.2); }
+    .set-toggle.on { color:#2a1500; background:linear-gradient(135deg,#ffd56b,#ff8a2e); border-color:transparent; }
+    /* ===== 모바일 키 배치 편집 모드 ===== */
+    #tcEditBar { display:none; position:fixed; left:0; right:0; top:0; z-index:90; align-items:center; gap:8px; padding:calc(8px + env(safe-area-inset-top)) max(10px, env(safe-area-inset-right)) 8px max(10px, env(safe-area-inset-left)); background:rgba(8,12,22,.92); border-bottom:1px solid rgba(255,255,255,.18); backdrop-filter:blur(8px); -webkit-backdrop-filter:blur(8px); touch-action:manipulation; }
+    body.tc-edit #tcEditBar { display:flex; }
+    #tcEditBar .nm { flex-shrink:0; min-width:64px; max-width:92px; font-size:12px; font-weight:700; line-height:1.2; color:#fff; }
+    #tcEditBar .val { flex-shrink:0; width:38px; text-align:right; font-family:var(--font-display); font-weight:600; font-size:12px; color:var(--muted); }
+    #tcEditBar .set-row { flex:1; min-width:70px; padding:0; }
+    #tcEditBar .tcb { flex-shrink:0; padding:7px 10px; border-radius:10px; font-size:12px; font-weight:700; cursor:pointer; color:#fff; background:rgba(255,255,255,.1); border:1px solid rgba(255,255,255,.25); }
+    #tcEditBar .tcb.done { color:#2a1500; background:linear-gradient(135deg,#ffd56b,#ff8a2e); border-color:transparent; }
+    #tcEditBar input:disabled { opacity:.35; }
+    body.tc-edit #startMenu { visibility:hidden !important; }
+    body.tc-edit #touchControls { display:block !important; z-index:80; }
+    body.tc-edit #touchToggle { display:flex !important; z-index:80; }
+    body.tc-edit .ui-bc { visibility:visible !important; pointer-events:auto; z-index:80; }
+    body.tc-edit .ui-bl, body.tc-edit .ui-br { visibility:hidden !important; }
+    body.tc-edit .tc-item, body.tc-edit #touchToggle, body.tc-edit .ui-bc { touch-action:none; outline:2px dashed rgba(255,255,255,.6); outline-offset:5px; cursor:grab; }
+    body.tc-edit .tc-item > *, body.tc-edit .ui-bc > * { pointer-events:auto; }
+    body.tc-edit .tc-sel { outline:3px solid var(--cyan) !important; outline-offset:5px; }
+    /* ===== 안내 말풍선 ===== */
+    .tip-bubble { position:fixed; z-index:75; padding:9px 14px; border-radius:14px; background:#ffd56b; color:#2a1500; font-weight:700; font-size:13px; line-height:1.3; white-space:nowrap; box-shadow:0 8px 24px rgba(0,0,0,.4); pointer-events:none; opacity:0; transition:opacity .25s; animation:tipBob 1.1s ease-in-out infinite; }
+    .tip-bubble.show { opacity:1; }
+    .tip-bubble::after { content:''; position:absolute; width:12px; height:12px; background:#ffd56b; transform:rotate(45deg); }
+    .tip-bubble.d-left::after { right:-5px; top:var(--ay, 50%); }
+    .tip-bubble.d-right::after { left:-5px; top:var(--ay, 50%); }
+    .tip-bubble.d-below::after { top:-5px; left:var(--ax, 50%); }
+    .tip-bubble.d-above::after { bottom:-5px; left:var(--ax, 50%); }
+    @keyframes tipBob { 0%,100% { translate:0 0; } 50% { translate:0 -4px; } }
     .set-sec { font-family:var(--font-display); font-weight:700; font-size:13px; letter-spacing:.12em; color:var(--amber); margin:16px 0 4px; }
     .set-row { display:flex; align-items:center; gap:12px; padding:9px 0; }
     .set-row .nm { width:96px; flex-shrink:0; font-size:14px; font-weight:700; }
@@ -176,14 +227,14 @@
     #touchToggle.on svg { transform: rotate(180deg); }
     #touchControls { display: none; position: fixed; inset: 0; z-index: 22; pointer-events: none; }
     body.touch-mode #touchControls { display: block; }
-    body.touch-mode #gameContainer > .z-10 { visibility: hidden; }
-    /* 터치 모드에서도 일시정지 버튼(우상단)과 계기판(하단 중앙)은 표시 */
-    body.touch-mode #pauseBtn, body.touch-mode #boostArc { visibility: visible; }
-    body.touch-mode #camBadge, body.touch-mode #soundBtn { display: none; }
+    /* 터치 모드: 기존 좌하단(RESET/CAM/BOOST)·우하단(WASD) 팝업만 가리고 나머지 HUD는 모두 표시 */
+    body.touch-mode .ui-bl, body.touch-mode .ui-br { visibility: hidden; }
     body.in-menu #touchToggle, body.in-menu #touchControls { display: none; }
-    .tc-left { position: absolute; left: max(16px, env(safe-area-inset-left)); bottom: max(18px, env(safe-area-inset-bottom)); display: flex; gap: 14px; }
-    .tc-right { position: absolute; right: max(16px, env(safe-area-inset-right)); bottom: max(18px, env(safe-area-inset-bottom)); display: flex; flex-direction: column; align-items: flex-start; gap: 14px; }
-    .tc-row { display: flex; gap: 14px; }
+    .tc-item { position: fixed; pointer-events: none; }
+    #tcSteerW { left: max(16px, env(safe-area-inset-left)); bottom: max(18px, env(safe-area-inset-bottom)); display: flex; gap: 14px; transform-origin: 0 100%; scale: var(--ui-scale); }
+    #tcDriftW { right: max(16px, env(safe-area-inset-right)); bottom: max(18px, env(safe-area-inset-bottom)); transform-origin: 100% 100%; scale: var(--ui-scale); }
+    #tcBoostW { right: calc(max(16px, env(safe-area-inset-right)) + 110px * var(--ui-scale)); bottom: calc(max(18px, env(safe-area-inset-bottom)) + 16px * var(--ui-scale)); transform-origin: 100% 100%; scale: var(--ui-scale); }
+    #tcInstantW { right: calc(max(16px, env(safe-area-inset-right)) + 118px * var(--ui-scale)); bottom: calc(max(18px, env(safe-area-inset-bottom)) + 110px * var(--ui-scale)); transform-origin: 100% 100%; scale: var(--ui-scale); }
     .tc-btn { pointer-events: auto; position: relative; overflow: hidden; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 2px; border-radius: 50%; color: #fff; font-family: var(--font-display); font-weight: 700; letter-spacing: .04em; background: rgba(10,16,28,.55); border: 2px solid rgba(255,255,255,.4); backdrop-filter: blur(6px); -webkit-backdrop-filter: blur(6px); touch-action: none; user-select: none; -webkit-user-select: none; -webkit-touch-callout: none; -webkit-tap-highlight-color: transparent; transition: transform .06s, background .08s, box-shadow .08s; }
     .tc-btn small { font-size: 11px; font-weight: 600; opacity: .8; }
     .tc-btn.active, .tc-btn.pressed { transform: scale(.93); }
@@ -296,13 +347,14 @@
     .mp-pl { display:flex; align-items:center; gap:8px; padding:8px 12px; border-radius:12px; background:rgba(255,255,255,.06); font-size:14px; }
     #mpRank { display:none; position:fixed; left:12px; top:46%; z-index:12; min-width:150px; padding:8px 10px; border-radius:12px; background:rgba(10,16,28,.62); border:1px solid rgba(255,255,255,.16); font-size:12px; pointer-events:none; }
     #mpRank .r { display:flex; justify-content:space-between; gap:10px; padding:2px 0; } #mpRank .me { color:var(--amber); font-weight:700; }
+    #mpRank .mk { display:inline-block; width:10px; height:10px; border-radius:50%; margin-right:6px; vertical-align:-1px; border:1.5px solid rgba(255,255,255,.85); box-sizing:border-box; }
     /* ===== UI 크기 (설정 > 화면). --ui-scale 배율, 화면 모서리를 기준으로 커지고 작아짐 ===== */
     :root { --ui-scale: 1; }
-    .ui-tl, .ui-tr, .ui-bl, .ui-bc, .ui-br, #eventBannerBox, .tc-left, .tc-right, #practiceGuideBtn { scale: var(--ui-scale); }
+    .ui-tl, .ui-tr, .ui-bl, .ui-bc, .ui-br, #eventBannerBox, #practiceGuideBtn { scale: var(--ui-scale); }
     .ui-tl, #practiceGuideBtn { transform-origin: 0 0; }
     .ui-tr { transform-origin: 100% 0; }
-    .ui-bl, .tc-left { transform-origin: 0 100%; }
-    .ui-br, .tc-right { transform-origin: 100% 100%; }
+    .ui-bl { transform-origin: 0 100%; }
+    .ui-br { transform-origin: 100% 100%; }
     .ui-bc { transform-origin: 0 100%; } /* -translate-x-1/2 적용 후 중심이 왼쪽 끝(x=0)에 오므로 그 점 기준 */
     #eventBannerBox { transform-origin: 50% 0; }
     #practiceGuideBtn { top: calc(12px + 72px * var(--ui-scale)); }
@@ -341,15 +393,30 @@
     </div>
 
 
-    <div id="vehSelect" class="fixed inset-0 z-40 hidden flex-col items-center justify-center px-4 py-6" style="background:rgba(6,10,20,.66);backdrop-filter:blur(4px);overflow-y:auto">
-      <div class="lbl" style="letter-spacing:.2em">GARAGE</div>
-      <h2 class="font-display text-3xl sm:text-4xl font-bold mt-2">카트바디 선택</h2>
-      <div class="veh-row mt-6">
+    <div id="vehSelect" class="garage fixed inset-0 z-40 hidden">
+      <div class="g-left">
+        <div class="g-tabs" role="tablist">
+          <button type="button" class="g-tab on" data-tab="char" role="tab" aria-selected="true">캐릭터</button>
+          <button type="button" class="g-tab" data-tab="kart" role="tab" aria-selected="false">카트</button>
+        </div>
+        <div class="lbl mt-5" style="letter-spacing:.2em">GARAGE</div>
+        <h2 id="gTitle" class="font-display text-2xl sm:text-3xl font-bold mt-2">캐릭터 선택</h2>
+        <div class="g-list" data-panel="char">
+          <button type="button" class="veh-card char-card" data-char="fox"><div class="vimg"><svg viewBox="0 0 160 120"><rect width="160" height="120" fill="#fff4e6"/><ellipse cx="80" cy="108" rx="44" ry="6" fill="#0001"/><path d="M42 52 L50 14 L72 40Z" fill="#f28a2e"/><path d="M118 52 L110 14 L88 40Z" fill="#f28a2e"/><path d="M48 46 L52 24 L64 40Z" fill="#fff4e6"/><path d="M112 46 L108 24 L96 40Z" fill="#fff4e6"/><path d="M46 22 L50 14 L54 20Z" fill="#3a2418"/><path d="M114 22 L110 14 L106 20Z" fill="#3a2418"/><ellipse cx="80" cy="64" rx="42" ry="38" fill="#f28a2e"/><path d="M40 70 Q80 112 120 70 Q104 92 80 92 Q56 92 40 70Z" fill="#fff4e6"/><ellipse cx="80" cy="80" rx="18" ry="12" fill="#fff4e6"/><ellipse cx="80" cy="76" rx="6" ry="4.5" fill="#111"/><ellipse cx="64" cy="58" rx="4.5" ry="6.5" fill="#111"/><ellipse cx="96" cy="58" rx="4.5" ry="6.5" fill="#111"/><circle cx="65.5" cy="55.5" r="1.6" fill="#fff"/><circle cx="97.5" cy="55.5" r="1.6" fill="#fff"/></svg></div><div class="vname">여우</div><div class="vsub">날렵한 주황빛 여우 · 살랑살랑 큰 꼬리</div></button>
+          <button type="button" class="veh-card char-card" data-char="pig"><div class="vimg"><svg viewBox="0 0 160 120"><rect width="160" height="120" fill="#ffe8ee"/><ellipse cx="80" cy="108" rx="44" ry="6" fill="#0001"/><ellipse cx="80" cy="64" rx="44" ry="40" fill="#ffb3c4"/><path d="M42 40 L46 16 L68 30Z" fill="#ffb3c4" stroke="#e98aa2" stroke-width="2" stroke-linejoin="round"/><path d="M118 40 L114 16 L92 30Z" fill="#ffb3c4" stroke="#e98aa2" stroke-width="2" stroke-linejoin="round"/><path d="M48 34 L50 22 L60 30Z" fill="#d9708c"/><path d="M112 34 L110 22 L100 30Z" fill="#d9708c"/><ellipse cx="80" cy="76" rx="19" ry="14" fill="#ff98b0" stroke="#e98aa2" stroke-width="2"/><ellipse cx="73" cy="76" rx="3.4" ry="5.2" fill="#c2506e"/><ellipse cx="87" cy="76" rx="3.4" ry="5.2" fill="#c2506e"/><ellipse cx="62" cy="54" rx="4.5" ry="6" fill="#111"/><ellipse cx="98" cy="54" rx="4.5" ry="6" fill="#111"/><circle cx="63.5" cy="51.5" r="1.6" fill="#fff"/><circle cx="99.5" cy="51.5" r="1.6" fill="#fff"/><ellipse cx="52" cy="72" rx="8" ry="5" fill="#ff6f91" opacity=".45"/><ellipse cx="108" cy="72" rx="8" ry="5" fill="#ff6f91" opacity=".45"/></svg></div><div class="vname">돼지</div><div class="vsub">짧은 팔다리 · 돌돌 말린 꼬리</div></button>
+        </div>
+        <div class="g-list hidden" data-panel="kart">
         <button type="button" class="veh-card active" data-veh="kart"><span class="veh-info" role="button" tabindex="0" aria-label="카트 성능 보기" title="성능 보기">i</span><div class="vimg"><svg viewBox="0 0 160 120"><rect width="160" height="120" fill="#fff"/><ellipse cx="80" cy="96" rx="58" ry="7" fill="#0001"/><path d="M22 76c0-14 14-24 34-26l30-14c10-4 22-2 30 6l12 20c4 6 2 14-6 14H32c-6 0-10-4-10-10z" fill="#12b5a6"/><path d="M72 40l22-8c6-2 10 0 14 4l6 8H66z" fill="#9be7ff" opacity=".7"/><rect x="26" y="68" width="110" height="5" fill="#ff7a1a"/><circle cx="48" cy="86" r="13" fill="#111827"/><circle cx="48" cy="86" r="6" fill="#e6edf3"/><circle cx="118" cy="86" r="13" fill="#111827"/><circle cx="118" cy="86" r="6" fill="#e6edf3"/></svg></div><div class="vname">민트 로드스터 카트</div></button>
         <button type="button" class="veh-card" data-veh="bike"><span class="veh-info" role="button" tabindex="0" aria-label="카트 성능 보기" title="성능 보기">i</span><div class="vimg"><img alt="골든 스톰 블레이드" src="data:image/jpeg;base64,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"></div><div class="vname">골든 스톰 블레이드</div></button>
         <button type="button" class="veh-card" data-veh="paragon9"><span class="veh-info" role="button" tabindex="0" aria-label="카트 성능 보기" title="성능 보기">i</span><div class="vimg"><img alt="파라곤9" src="data:image/jpeg;base64,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"></div><div class="vname">파라곤9</div></button>
+</div>
+        <button id="vehBackBtn" type="button" class="glass mt-5 px-8 py-3 rounded-2xl text-base cursor-pointer self-start" style="font-weight:700">확인</button>
       </div>
-      <button id="vehBackBtn" type="button" class="glass mt-6 px-8 py-3 rounded-2xl text-base cursor-pointer" style="font-weight:700">확인</button>
+      <div class="g-right">
+        <canvas id="garageCanvas" aria-label="캐릭터와 카트 3D 미리보기"></canvas>
+        <div class="g-cap"><span id="gCapChar" class="amber">여우</span><span class="g-dot">·</span><span id="gCapKart">민트 로드스터 카트</span></div>
+        <div class="g-hint">드래그해서 돌려보기</div>
+      </div>
     </div>
 
     <div id="mapSelect" class="fixed inset-0 z-40 hidden flex-col items-center justify-center px-4 py-6" style="background:rgba(6,10,20,.58);backdrop-filter:blur(4px);overflow-y:auto">
@@ -390,6 +457,11 @@
           <div class="set-sec">화면</div>
           <div class="set-row"><span class="nm">UI 크기</span><input id="setUi" type="range" min="70" max="150" step="5" value="100" aria-label="UI 크기"><span id="setUiVal" class="val">100%</span></div>
           <div class="text-xs" style="color:var(--muted);margin:-2px 0 6px 108px">주행 중 계기판·미니맵·터치 버튼 크기</div>
+          <div class="set-row"><span class="nm">모바일 키</span><button id="setTcEdit" type="button" class="glass rounded-xl px-4 py-2.5 text-sm cursor-pointer flex-1" style="font-weight:700">키 배치 편집</button></div>
+          <div class="text-xs" style="color:var(--muted);margin:-2px 0 6px 108px">키를 드래그해 옮기고, 위쪽 슬라이더로 크기를 조절해요</div>
+          <div class="set-sec">성능</div>
+          <div class="set-row"><span class="nm">저사양 모드</span><button id="setLow" type="button" class="set-toggle" aria-pressed="false">OFF</button></div>
+          <div class="text-xs" style="color:var(--muted);margin:-2px 0 6px 108px">그림자·구름·바닥 자갈을 없애고 해상도를 낮춰 버벅임을 줄여요</div>
           <div class="set-sec">이펙트</div>
           <div class="set-row"><span class="nm">바람 효과</span><input id="setWind" type="range" min="0" max="100" step="1" value="50" aria-label="부스터 바람 효과 정도"><span id="setWindVal" class="val">100%</span></div>
           <div class="text-xs" style="color:var(--muted);margin:-2px 0 6px 108px">부스터 사용 시 생기는 흰색 직선</div>
@@ -481,7 +553,7 @@
         </div>
         <div class="overflow-y-auto px-5 sm:px-7 pb-6 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3.5" style="pointer-events:auto;min-height:0;grid-auto-rows:max-content;align-content:start">
 <div class="tech-card"><svg viewBox="0 0 160 110" role="img" aria-label="diagram"><rect width="160" height="110" fill="#141c2c"/><defs><marker id="ah1" viewBox="0 0 8 8" refX="6" refY="4" markerWidth="6" markerHeight="6" orient="auto"><path d="M0 0L8 4L0 8z" fill="#5ce1ff"/></marker></defs><rect x="0" y="0" width="160" height="26" fill="#1b2640"/><rect x="6" y="5" width="40" height="16" rx="4" fill="none" stroke="#ffb62e" stroke-opacity=".7"/><text x="26.0" y="16.5" font-size="9" font-weight="700" fill="#ffb62e" text-anchor="middle" font-family="sans-serif">Shift</text><text x="49" y="16.5" font-size="9" fill="#9aa4b5" font-family="sans-serif">+</text><rect x="58" y="5" width="36" height="16" rx="4" fill="none" stroke="#fff" stroke-opacity=".7"/><text x="76.0" y="16.5" font-size="9" font-weight="700" fill="#fff" text-anchor="middle" font-family="sans-serif">←/→</text><path d="M26 104 C26 76 48 58 80 54" stroke="#fff" stroke-opacity=".2" stroke-width="6" fill="none" stroke-linecap="round"/><path d="M34 104 C34 78 56 60 128 56" fill="none" stroke="#5ce1ff" stroke-width="2.5" stroke-dasharray="5 4" marker-end="url(#ah1)"/><g transform="translate(86 60) rotate(-78)"><rect x="-7" y="-12" width="14" height="24" rx="4" fill="#ffb62e"/><rect x="-5" y="-9" width="10" height="6" rx="2" fill="#1a1200" opacity=".55"/></g></svg><div class="body"><h3>드리프트</h3><div class="how"><span class="keyhint">Shift</span> + <span class="keyhint">←</span>/<span class="keyhint">→</span></div>Shift를 누르고 방향키로 차체를 비틀며 코너를 돌아요. 드리프트하는 동안 부스터 게이지가 빠르게 충전됩니다.</div></div>
-<div class="tech-card"><svg viewBox="0 0 160 110" role="img" aria-label="diagram"><rect width="160" height="110" fill="#141c2c"/><defs><marker id="ah3" viewBox="0 0 8 8" refX="6" refY="4" markerWidth="6" markerHeight="6" orient="auto"><path d="M0 0L8 4L0 8z" fill="#ffb62e"/></marker></defs><rect x="0" y="0" width="160" height="26" fill="#1b2640"/><rect x="6" y="5" width="40" height="16" rx="4" fill="none" stroke="#ffb62e" stroke-opacity=".7"/><text x="26.0" y="16.5" font-size="9" font-weight="700" fill="#ffb62e" text-anchor="middle" font-family="sans-serif">Shift</text><text x="49" y="16.5" font-size="9" fill="#9aa4b5" font-family="sans-serif">짧게</text><text x="72" y="16.5" font-size="9" fill="#9aa4b5" font-family="sans-serif">→</text><rect x="85" y="5" width="62" height="16" rx="4" fill="none" stroke="#fff" stroke-opacity=".7"/><text x="116.0" y="16.5" font-size="9" font-weight="700" fill="#fff" text-anchor="middle" font-family="sans-serif">←/→ 유지</text><path d="M70 114 C 72 86, 82 62, 128 44" fill="none" stroke="#fff" stroke-opacity=".09" stroke-width="26" stroke-linecap="round"/><path d="M70 106 C 72 84, 82 62, 122 46" fill="none" stroke="#ffb62e" stroke-width="2.5" stroke-dasharray="5 4" marker-end="url(#ah3)"/><g transform="translate(82 74) rotate(37)"><rect x="-7" y="-12" width="14" height="24" rx="4" fill="#ffb62e"/><rect x="-5" y="-9" width="10" height="6" rx="2" fill="#1a1200" opacity=".55"/></g></svg><div class="body"><h3><span class="badge badge-drag">끌기</span></h3><div class="how"><span class="keyhint">Shift</span> 짧게 → <span class="keyhint">←</span>/<span class="keyhint">→</span> 유지</div>Shift를 살짝 눌렀다 떼고 방향키를 계속 누르면, 차체가 옆으로 미끄러지며 넓고 완만한 곡선을 천천히 그리듯 돌아가요.</div></div>
+<div class="tech-card"><svg viewBox="0 0 160 110" role="img" aria-label="diagram"><rect width="160" height="110" fill="#141c2c"/><defs><marker id="ah3" viewBox="0 0 8 8" refX="6" refY="4" markerWidth="6" markerHeight="6" orient="auto"><path d="M0 0L8 4L0 8z" fill="#ffb62e"/></marker></defs><rect x="0" y="0" width="160" height="26" fill="#1b2640"/><rect x="6" y="5" width="40" height="16" rx="4" fill="none" stroke="#ffb62e" stroke-opacity=".7"/><text x="26.0" y="16.5" font-size="9" font-weight="700" fill="#ffb62e" text-anchor="middle" font-family="sans-serif">Shift</text><text x="49" y="16.5" font-size="9" fill="#9aa4b5" font-family="sans-serif">짧게</text><text x="72" y="16.5" font-size="9" fill="#9aa4b5" font-family="sans-serif">→</text><rect x="85" y="5" width="62" height="16" rx="4" fill="none" stroke="#fff" stroke-opacity=".7"/><text x="116.0" y="16.5" font-size="9" font-weight="700" fill="#fff" text-anchor="middle" font-family="sans-serif">←/→ 유지</text><path d="M70 114 C 72 86, 82 62, 128 44" fill="none" stroke="#fff" stroke-opacity=".09" stroke-width="26" stroke-linecap="round"/><path d="M70 106 C 72 84, 82 62, 122 46" fill="none" stroke="#ffb62e" stroke-width="2.5" stroke-dasharray="5 4" marker-end="url(#ah3)"/><g transform="translate(82 74) rotate(37)"><rect x="-7" y="-12" width="14" height="24" rx="4" fill="#ffb62e"/><rect x="-5" y="-9" width="10" height="6" rx="2" fill="#1a1200" opacity=".55"/></g></svg><div class="body"><h3><span class="badge badge-drag">끌기</span></h3><div class="how"><span class="keyhint">Shift</span> 뗀 뒤 끌리는 동안 → <span class="keyhint">←</span>/<span class="keyhint">→</span> 유지</div>드리프트 후 Shift를 떼면 차가 잠시 끌려요. 이때 드리프트 방향의 방향키를 누르면 끌기가 이어지고, 키를 누르고 있는 동안 차체가 옆으로 미끄러지며 넓고 완만한 곡선을 그려요.</div></div>
 <div class="tech-card"><svg viewBox="0 0 160 110" role="img" aria-label="diagram"><rect width="160" height="110" fill="#141c2c"/><defs><marker id="ah2" viewBox="0 0 8 8" refX="6" refY="4" markerWidth="6" markerHeight="6" orient="auto"><path d="M0 0L8 4L0 8z" fill="#f0a6ff"/></marker></defs><rect x="0" y="0" width="160" height="26" fill="#1b2640"/><rect x="6" y="5" width="40" height="16" rx="4" fill="none" stroke="#ffb62e" stroke-opacity=".7"/><text x="26.0" y="16.5" font-size="9" font-weight="700" fill="#ffb62e" text-anchor="middle" font-family="sans-serif">Shift</text><text x="49" y="16.5" font-size="9" fill="#9aa4b5" font-family="sans-serif">+</text><rect x="58" y="5" width="20" height="16" rx="4" fill="none" stroke="#fff" stroke-opacity=".7"/><text x="68.0" y="16.5" font-size="9" font-weight="700" fill="#fff" text-anchor="middle" font-family="sans-serif">→</text><rect x="81" y="5" width="20" height="16" rx="4" fill="none" stroke="#f0a6ff" stroke-opacity=".7"/><text x="91.0" y="16.5" font-size="9" font-weight="700" fill="#f0a6ff" text-anchor="middle" font-family="sans-serif">→</text><path d="M34 106 C34 70 52 48 92 48 C116 48 128 60 126 90" fill="none" stroke="#f0a6ff" stroke-width="2.5" stroke-dasharray="5 4" marker-end="url(#ah2)"/><g transform="translate(92 50) rotate(-85)"><rect x="-7" y="-12" width="14" height="24" rx="4" fill="#f0a6ff"/><rect x="-5" y="-9" width="10" height="6" rx="2" fill="#1a1200" opacity=".55"/></g><text x="10" y="62" font-size="13" font-weight="700" fill="#f0a6ff" font-family="sans-serif">×2</text></svg><div class="body"><h3><span class="badge badge-double">더블 드리프트</span></h3><div class="how"><span class="keyhint">Shift</span> 드리프트 중 같은 방향키 한 번 더</div>드리프트 중에 같은 방향키를 한 번 더(0.45초 이내) 누르면 방향전환률이 올라가 더 날카롭게 꺾이고, 0.55초가 지나면 한 번 더 상승해요.</div></div>
 <div class="tech-card"><svg viewBox="0 0 160 110" role="img" aria-label="diagram"><rect width="160" height="110" fill="#141c2c"/><defs><marker id="ah4" viewBox="0 0 8 8" refX="6" refY="4" markerWidth="6" markerHeight="6" orient="auto"><path d="M0 0L8 4L0 8z" fill="#5ce1ff"/></marker></defs><rect x="0" y="0" width="160" height="26" fill="#1b2640"/><rect x="6" y="5" width="40" height="16" rx="4" fill="none" stroke="#ffb62e" stroke-opacity=".7"/><text x="26.0" y="16.5" font-size="9" font-weight="700" fill="#ffb62e" text-anchor="middle" font-family="sans-serif">Shift</text><text x="49" y="16.5" font-size="9" fill="#9aa4b5" font-family="sans-serif">+</text><rect x="58" y="5" width="20" height="16" rx="4" fill="none" stroke="#fff" stroke-opacity=".7"/><text x="68.0" y="16.5" font-size="9" font-weight="700" fill="#fff" text-anchor="middle" font-family="sans-serif">→</text><text x="81" y="16.5" font-size="9" fill="#9aa4b5" font-family="sans-serif">+</text><rect x="90" y="5" width="20" height="16" rx="4" fill="none" stroke="#5ce1ff" stroke-opacity=".7"/><text x="100.0" y="16.5" font-size="9" font-weight="700" fill="#5ce1ff" text-anchor="middle" font-family="sans-serif">←</text><path d="M54 106 L114 40" fill="none" stroke="#5ce1ff" stroke-width="2.5" stroke-dasharray="5 4" marker-end="url(#ah4)"/><g transform="translate(84 74) rotate(-28)"><rect x="-7" y="-12" width="14" height="24" rx="4" fill="#5ce1ff"/><rect x="-5" y="-9" width="10" height="6" rx="2" fill="#1a1200" opacity=".55"/></g><path d="M30 66 C20 76 20 90 30 98" fill="none" stroke="#ff7a8a" stroke-width="2" marker-end="url(#ah4r)"/><defs><marker id="ah4r" viewBox="0 0 8 8" refX="6" refY="4" markerWidth="6" markerHeight="6" orient="auto"><path d="M0 0L8 4L0 8z" fill="#ff7a8a"/></marker></defs></svg><div class="body"><h3><span class="badge badge-cut">뉴커팅</span></h3><div class="how"><span class="keyhint">Shift</span> 드리프트 중 <b>반대</b> 방향키</div>드리프트 중에 반대 방향키를 누르면 차체가 틀어진 채로 직진해요. 게이지 충전 속도가 가장 빨라 순간부스터를 크게 노릴 수 있어요.</div></div>
 <div class="tech-card"><svg viewBox="0 0 160 110" role="img" aria-label="diagram"><rect width="160" height="110" fill="#141c2c"/><defs><marker id="ah5" viewBox="0 0 8 8" refX="6" refY="4" markerWidth="6" markerHeight="6" orient="auto"><path d="M0 0L8 4L0 8z" fill="#ffb62e"/></marker></defs><rect x="0" y="0" width="160" height="26" fill="#1b2640"/><rect x="6" y="5" width="16" height="16" rx="4" fill="none" stroke="#ffb62e" stroke-opacity=".7"/><text x="14.0" y="16.5" font-size="9" font-weight="700" fill="#ffb62e" text-anchor="middle" font-family="sans-serif">W</text><text x="25" y="16.5" font-size="9" fill="#9aa4b5" font-family="sans-serif">뗐다</text><text x="48" y="16.5" font-size="9" fill="#9aa4b5" font-family="sans-serif">→</text><rect x="61" y="5" width="16" height="16" rx="4" fill="none" stroke="#ffb62e" stroke-opacity=".7"/><text x="69.0" y="16.5" font-size="9" font-weight="700" fill="#ffb62e" text-anchor="middle" font-family="sans-serif">W</text><rect x="10" y="58" width="60" height="10" rx="5" fill="#ffb62e"/><rect x="70" y="58" width="80" height="10" rx="5" fill="#5ce1ff" opacity=".6"/><text x="10" y="50" font-size="8" font-weight="700" fill="#ffb62e" font-family="sans-serif">25°+ 드리프트</text><line x1="70" y1="54" x2="70" y2="72" stroke="#fff" stroke-opacity=".7"/><text x="66" y="84" font-size="8" fill="#cfd6e3" text-anchor="end" font-family="sans-serif">종료</text><text x="76" y="84" font-size="8" font-weight="700" fill="#5ce1ff" font-family="sans-serif">1.5초 이내</text><path d="M126 92 l8 -13 l3 7 l8 -2 l-9 17z" fill="#ff8a2e"/></svg><div class="body"><h3><span class="badge badge-boost">순간부스터</span></h3><div class="how">25° 이상 드리프트 종료 → 1.5초 내 <span class="keyhint">W</span> 뗐다 누르기</div>충분히 꺾은 드리프트를 끝낸 직후 타이밍 좋게 가속키를 뗐다 누르면 짧고 강한 부스트가 터져요.</div></div>
@@ -601,17 +673,28 @@
       <svg viewBox="0 0 24 24" width="26" height="26" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4.1 10.6A8 8 0 0 1 19.9 10.6"/><path d="M17.4 8.1l2.5 2.5 2.5-2.5"/><path d="M19.9 13.4A8 8 0 0 1 4.1 13.4"/><path d="M6.6 15.9l-2.5-2.5-2.5 2.5"/></svg>
     </button>
     <div id="touchControls">
-      <div class="tc-left">
+      <div class="tc-item" id="tcSteerW">
         <button type="button" data-action="LEFT" aria-label="좌회전" class="tc-btn tc-steer">◀</button>
         <button type="button" data-action="RIGHT" aria-label="우회전" class="tc-btn tc-steer">▶</button>
       </div>
-      <div class="tc-right">
+      <div class="tc-item" id="tcInstantW">
         <button type="button" id="tcInstant" aria-label="순간부스터" class="tc-btn tc-instant"><svg class="tc-flame" viewBox="0 0 24 28" aria-hidden="true"><defs><linearGradient id="blueFlameGrad" x1="0" y1="1" x2="0" y2="0"><stop offset="0" stop-color="#2563ff"/><stop offset="0.55" stop-color="#2fb5ff"/><stop offset="1" stop-color="#9ff0ff"/></linearGradient></defs><path d="M12.5 1c.6 4.2 6.5 7.2 6.5 14.2A7 7 0 0 1 5 15.2c0-2.7 1.3-4.8 2.8-6.2.3 2.2 1.3 3.6 2.7 4C9.6 8.8 10.6 4.2 12.5 1z" fill="url(#blueFlameGrad)"/><path d="M12 14c.4 2 2.8 3.2 2.8 6a2.8 2.8 0 0 1-5.6 0c0-1.4.7-2.3 1.4-3 .2.9.6 1.4 1.1 1.5-.2-1.7.1-3.3.3-4.5z" fill="#eafcff" opacity=".95"/></svg></button>
-        <div class="tc-row">
-          <button type="button" data-action="BOOST" aria-label="부스터" class="tc-btn tc-boost"><i class="tc-fill" id="tcFill"></i><span>BOOST</span><i class="tc-count" id="tcCount">0 / 2</i></button>
-          <button type="button" data-action="DRIFT" aria-label="드리프트" class="tc-btn tc-drift">DRIFT</button>
-        </div>
       </div>
+      <div class="tc-item" id="tcBoostW">
+        <button type="button" data-action="BOOST" aria-label="부스터" class="tc-btn tc-boost"><i class="tc-fill" id="tcFill"></i><span>BOOST</span><i class="tc-count" id="tcCount">0 / 2</i></button>
+      </div>
+      <div class="tc-item" id="tcDriftW">
+        <button type="button" data-action="DRIFT" aria-label="드리프트" class="tc-btn tc-drift">DRIFT</button>
+      </div>
+    </div>
+
+    <!-- 모바일 키 배치 편집 바 (상단 고정) -->
+    <div id="tcEditBar" role="toolbar" aria-label="모바일 키 배치 편집">
+      <span class="nm" id="tcbName">키를 눌러 선택</span>
+      <div class="set-row"><input id="tcbSize" type="range" min="50" max="180" step="5" value="100" disabled aria-label="선택한 키 크기"></div>
+      <span class="val" id="tcbVal">100%</span>
+      <button type="button" class="tcb" id="tcbReset">초기화</button>
+      <button type="button" class="tcb done" id="tcbDone">완료</button>
     </div>
 
     <div id="rankModal" class="fixed inset-0 hidden items-center justify-center p-4" style="z-index:60;background:rgba(4,8,18,.72);backdrop-filter:blur(5px)">
@@ -650,7 +733,7 @@
      * - 광폭 도로(39m) + 7개 장거리 직선 코스의 입체 교차 고가도로 서킷
      * - 드리프트 키: Shift (ShiftLeft / ShiftRight), 타이어 스키드 & 마찰 애니메이션
      * - 더블 드리프트: 드리프트 + 같은 방향키 2회 입력 시 방향전환률 상향
-     * - 끌기: Shift 짧게 입력 후 방향키 유지 시 직선 위주로 옆으로 미끄러지며 주행
+     * - 끌기: 드리프트 후 끌리는 동안 드리프트 방향 방향키를 누르면 끌기 유지 (옆으로 미끄러지며 주행)
      * - 뉴커팅: 드리프트 중 반대 방향키 동시 입력 시 틀어진 채 직진 & 순간부스터 극대화
      * - 순간부스터: 드리프트 1회당 1회 (25° 이상 도달 시 충전). 진행 중인 드리프트의 충전분은 그 드리프트가 끝난 뒤에만 사용, 이전 드리프트 충전분은 드리프트 중에도 사용 가능
  *   · 순간부스터 연타 드리프트: 드리프트-끊음-드리프트-(순간부스터)-(순간부스터)
@@ -701,15 +784,24 @@
       // 1. Web Audio API 합성 사운드 엔진 (외부 오디오 파일 없이 즉시 작동)
       // --------------------------------------------------------------------------
       // 사용자 설정 (0~1, 기본 1 = 기존 값 그대로). localStorage에 저장
-      const gameSettings = { music: 1, sfx: 1, wind: 0.5, cone: 1, ui: 1 }; // ui: 화면 UI 크기 배율 (0.7~1.5)
+      const gameSettings = { music: 1, sfx: 1, wind: 0.5, cone: 1, ui: 1, low: 0, tc: null }; // ui: 화면 UI 크기 배율 (0.7~1.5)
       try {
         const sv = JSON.parse(localStorage.getItem('kkudeokSettings') || '{}');
         ['music', 'sfx', 'wind', 'cone'].forEach((k) => { if (typeof sv[k] === 'number') gameSettings[k] = Math.min(1, Math.max(0, sv[k])); });
         if (typeof sv.ui === 'number') gameSettings.ui = Math.min(1.5, Math.max(0.7, sv.ui));
+        if (sv.low) gameSettings.low = 1; // 저사양 모드
+        if (sv.tc && typeof sv.tc === 'object') { // 모바일 키 배치 {id:{x,y,s}} (x,y = 화면 비율 중심좌표, s = 크기 배율)
+          const tc = {}, cl = (v, a, b) => Math.min(b, Math.max(a, v));
+          ['steer', 'gauge', 'instant', 'boost', 'drift', 'toggle'].forEach((id) => {
+            const v = sv.tc[id];
+            if (v && isFinite(v.x) && isFinite(v.y) && isFinite(v.s)) tc[id] = { x: cl(v.x, 0, 1), y: cl(v.y, 0, 1), s: cl(v.s, 0.5, 1.8) };
+          });
+          if (Object.keys(tc).length) gameSettings.tc = tc;
+        }
       } catch (_) {}
       document.documentElement.style.setProperty('--ui-scale', String(gameSettings.ui));
       const saveSettings = () => { try { localStorage.setItem('kkudeokSettings', JSON.stringify(gameSettings)); } catch (_) {} };
-      window.__kk = { gameSettings, saveSettings, get audio() { return audio; } }; // 설정 UI 스크립트에서 사용
+      window.__kk = { gameSettings, saveSettings, get audio() { return audio; }, applyLowSpec: () => applyLowSpec() }; // 설정 UI 스크립트에서 사용
 
       const audio = (() => {
         let sfxMaster = null, musicMaster = null;
@@ -1672,7 +1764,7 @@
           const sp = new THREE.Sprite(new THREE.SpriteMaterial({ map: tex[i % 3], transparent: true, depthWrite: false, fog: false, opacity: 0.92 }));
           const a = rn() * Math.PI * 2, d = 500 + rn() * 1100, w = 380 + rn() * 420;
           sp.position.set(Math.cos(a) * d, 90 + rn() * 380, Math.sin(a) * d);
-          sp.scale.set(w, w * 0.42, 1); sp.renderOrder = -5;
+          sp.scale.set(w, w * 0.42, 1); sp.renderOrder = -5; sp.userData.lowHide = true;
           group.add(sp); clouds.push({ sp, a, d });
         }
         updateEnvironment = (t) => {
@@ -3068,7 +3160,7 @@
             const sp = new THREE.Sprite(new THREE.SpriteMaterial({ map: tex[i % 3], color: 0xb89ae8, transparent: true, depthWrite: false, fog: false, opacity: 0.5 }));
             const a = rn() * Math.PI * 2, d = 500 + rn() * 1100, w = 380 + rn() * 420;
             sp.position.set(Math.cos(a) * d, 80 + rn() * 300, Math.sin(a) * d);
-            sp.scale.set(w, w * 0.42, 1); sp.renderOrder = -5;
+            sp.scale.set(w, w * 0.42, 1); sp.renderOrder = -5; sp.userData.lowHide = true;
             sky.add(sp); clouds.push({ sp, a, d });
           }
         }
@@ -3202,7 +3294,7 @@
             pebs.setMatrixAt(k, pm);
             pc2.setHex(tones[(rp() * tones.length) | 0]); pc2.multiplyScalar(0.85 + rp() * 0.3); pebs.setColorAt(k, pc2);
           });
-          pebs.instanceMatrix.needsUpdate = true; pebs.instanceColor.needsUpdate = true; pebs.frustumCulled = false; pebs.receiveShadow = true;
+          pebs.instanceMatrix.needsUpdate = true; pebs.instanceColor.needsUpdate = true; pebs.frustumCulled = false; pebs.receiveShadow = true; pebs.userData.lowHide = true;
           root.add(pebs);
         }
 
@@ -3775,6 +3867,10 @@
         instantBoostLocked: false, // 터치 ⚡버튼으로 발동한 순간부스터: 앞키 뗌으로 끊기지 않음
         afterDragTimer: 0,
         afterDragMax: 0,
+        afterDragDir: 0,
+        afterDragShort: false,
+        afterDragCancelT: 0,
+        afterDragSettleT: 0,
         instantBoostTimer: 0,
         instantBoostPower: 1.45,
         instantBoostChargedMax: false,
@@ -4069,7 +4165,7 @@
       }
       document.getElementById('vehBtn').addEventListener('click', (e) => { e.stopPropagation(); if (race.phase === 'menu') showVehSelect(true); });
       document.getElementById('vehBackBtn').addEventListener('click', (e) => { e.stopPropagation(); showVehSelect(false); });
-      vehEl.querySelectorAll('.veh-card').forEach((c) => c.addEventListener('click', (e) => { e.stopPropagation(); setVehicle(c.dataset.veh); }));
+      vehEl.querySelectorAll('.veh-card[data-veh]').forEach((c) => c.addEventListener('click', (e) => { e.stopPropagation(); setVehicle(c.dataset.veh); }));
 
       // --------------------------------------------------------------------------
       // 맵 선택 (메인 메뉴) & 맵 전환
@@ -4137,6 +4233,19 @@
           dShadowSet(270);
         }
       }
+      // 저사양 모드: 그림자 끄기, 구름·자잘한 바닥 장식 숨기기, 해상도 1배 고정
+      function applyLowSpec() {
+        const low = !!gameSettings.low;
+        const shadowChanged = renderer.shadowMap.enabled === low;
+        renderer.setPixelRatio(low ? 1 : Math.min(window.devicePixelRatio || 1, 2));
+        renderer.setSize(window.innerWidth, window.innerHeight);
+        renderer.shadowMap.enabled = !low;
+        dirLight.castShadow = !low;
+        scene.traverse((o) => {
+          if (o.userData && o.userData.lowHide) o.visible = !low;
+          if (shadowChanged && o.material) (Array.isArray(o.material) ? o.material : [o.material]).forEach((m) => { m.needsUpdate = true; });
+        });
+      }
       function dShadowSet(d) {
         const c = dirLight.shadow.camera;
         c.left = -d; c.right = d; c.top = d; c.bottom = -d;
@@ -4154,6 +4263,7 @@
         computeMinimapBounds();
         setEnvironment(id);
         updateEnvironment = m.updateEnv;
+        applyLowSpec();
         mapCards.forEach((c) => c.classList.toggle('active', c.dataset.map === id));
         { // 연습모드 UI (좌상단 가이드 버튼, 랩 표시 ∞, 최고 랩 라벨)
           const wasPractice = document.body.classList.contains('practice-mode');
@@ -4340,11 +4450,20 @@
           pushInstantCharge(hadCutting);
         }
 
-        // 끌기/뉴커팅이 아닌 일반 드리프트: 살짝 끌림 (오래 누를수록 더 길게)
-        if (!wasDragging && !wasCutting && Math.abs(kart.speed) >= 10) {
-          const hr = Math.min(1, heldSec / 1.5);
-          kart.afterDragMax = 0.12 + 0.38 * hr * hr * (3 - 2 * hr); // 0.12 ~ 0.50초
+        // 드리프트가 끝나면 키를 떼도 더 끌림 (끌기/뉴커팅 종료 포함)
+        //  - 0.08초 이하로 '엄청 짧게' 누르면 숏 드리프트: 최소 0.15초만 끌리고 스키드도 살짝만 남김
+        //  - 그 외 전부: 누른 시간(0.08초~1.5초)에 따라 0.15초 ~ 0.55초 더 끌림 (차체는 드리프트 자세 유지, 끌릴수록 감속)
+        if (Math.abs(kart.speed) >= 10) {
+          if (heldSec <= 0.08) {
+            kart.afterDragMax = 0.15; kart.afterDragShort = true;
+          } else {
+            const hr = Math.min(1, (heldSec - 0.08) / 1.42);
+            kart.afterDragMax = 0.15 + 0.40 * hr * hr * (3 - 2 * hr); // 0.15 ~ 0.55초
+            kart.afterDragShort = false;
+          }
           kart.afterDragTimer = kart.afterDragMax;
+          kart.afterDragDir = prevDriftDir;
+          kart.afterDragCancelT = 0; kart.afterDragSettleT = 0;
         }
       }
 
@@ -4747,9 +4866,151 @@
       });
 
       // --------------------------------------------------------------------------
+      // 6-0. 캐릭터(레이서) 공용 모듈 — 모든 카트가 같은 캐릭터를 태움 (악세사리 없음)
+      //   pose: 카트별 좌석 자세 (driver 로컬 좌표, +X 전방)
+      // --------------------------------------------------------------------------
+      const CHAR_LIST = [
+        { id: 'fox', name: '여우', sub: '날렵한 주황빛 여우 · 살랑살랑 큰 꼬리' },
+        { id: 'pig', name: '돼지', sub: '짧은 팔다리 · 돌돌 말린 꼬리의 꿀꿀이' }
+      ];
+      const CHAR_IDS = CHAR_LIST.map((c) => c.id);
+      const racerKit = (() => {
+        const sphereGeo = new THREE.SphereGeometry(1, 24, 16);
+        const lam = (c) => new THREE.MeshLambertMaterial({ color: c });
+        const M = {
+          fox: { fur: lam(0xf28a2e), light: lam(0xfff4e6), dark: lam(0x3a2418) },
+          pig: { fur: new THREE.MeshPhongMaterial({ color: 0xffb3c4, shininess: 40, specular: 0x553340 }), light: lam(0xffc2cf), dark: lam(0xd9708c), snout: new THREE.MeshPhongMaterial({ color: 0xff98b0, shininess: 60, specular: 0x664050 }) },
+          eye: new THREE.MeshPhongMaterial({ color: 0x111111, shininess: 160, specular: 0xffffff }),
+          shine: new THREE.MeshBasicMaterial({ color: 0xffffff }),
+          blush: new THREE.MeshBasicMaterial({ color: 0xff6f91, transparent: true, opacity: 0.45, depthWrite: false })
+        };
+        const V = (a) => new THREE.Vector3(a[0], a[1], a[2]);
+        const ell = (rx, ry, rz, mat, x, y, z, parent, shadow = true) => { const m = new THREE.Mesh(sphereGeo, mat); m.scale.set(rx, ry, rz); m.position.set(x, y, z); m.castShadow = shadow; parent.add(m); return m; };
+        const limb = (a, b, r, mat, parent, r2 = r * 0.85) => {
+          const d = new THREE.Vector3().subVectors(b, a), len = d.length();
+          const m = new THREE.Mesh(new THREE.CylinderGeometry(r2, r, len, 12), mat);
+          m.position.copy(a).addScaledVector(d, 0.5); m.quaternion.setFromUnitVectors(new THREE.Vector3(0, 1, 0), d.normalize()); m.castShadow = true; parent.add(m);
+          ell(r, r, r, mat, a.x, a.y, a.z, parent, false); return m;
+        };
+        const mirror = (p, sd) => [p[0], p[1], p[2] * sd];
+
+        // ---- 여우: 뾰족 귀 + 주둥이 + 큰 꼬리
+        function fox(g, P, tailParent) {
+          const m = M.fox;
+          const T = P.torso;
+          const torso = new THREE.Mesh(new THREE.CylinderGeometry(T.r1, T.r2, T.h, 16), m.fur);
+          torso.position.set(T.pos[0], T.pos[1], T.pos[2]); torso.rotation.z = T.rz || 0; torso.castShadow = true; g.add(torso);
+          const belly = ell(T.r1 * 0.45, T.h * 0.42, T.r1 * 1.05, m.light, 0, 0, 0, torso, false); belly.position.set(T.r1 * 0.72, 0.02, 0);
+          [-1, 1].forEach((sd) => {
+            const sh = V(mirror(P.shoulder, sd)), hd = V(mirror(P.hand, sd));
+            limb(sh, hd, P.armR || 0.09, m.fur, g);
+            ell(0.105, 0.1, 0.105, m.dark, hd.x, hd.y, hd.z, g);
+            if (P.hip) { const hp = V(mirror(P.hip, sd)), ft = V(mirror(P.foot, sd)); limb(hp, ft, 0.1, m.fur, g); ell(0.13, 0.1, 0.11, m.dark, ft.x + 0.03, ft.y, ft.z, g); }
+          });
+          const head = new THREE.Group(); head.position.set(P.head[0], P.head[1], P.head[2]); head.scale.setScalar(P.headS || 1); g.add(head);
+          ell(0.48, 0.44, 0.48, m.fur, 0, 0, 0, head);
+          ell(0.32, 0.2, 0.27, m.light, 0.38, -0.2, 0, head);                     // 주둥이
+          ell(0.075, 0.06, 0.075, M.eye, 0.69, -0.17, 0, head, false);            // 코
+          [-1, 1].forEach((sd) => {
+            ell(0.2, 0.15, 0.15, m.light, 0.26, -0.18, 0.3 * sd, head, false);  // 볼
+            ell(0.05, 0.085, 0.05, M.eye, 0.41, 0.08, 0.19 * sd, head, false);  // 눈
+            ell(0.018, 0.026, 0.018, M.shine, 0.455, 0.12, 0.2 * sd, head, false);
+            const ear = new THREE.Mesh(new THREE.ConeGeometry(0.17, 0.46, 6), m.fur); ear.position.set(-0.05, 0.47, 0.27 * sd); ear.rotation.x = -0.22 * sd; ear.castShadow = true; head.add(ear);
+            const inner = new THREE.Mesh(new THREE.ConeGeometry(0.09, 0.3, 6), m.light); inner.position.set(0.02, 0.45, 0.27 * sd); inner.rotation.x = -0.22 * sd; head.add(inner);
+            const tip = new THREE.Mesh(new THREE.ConeGeometry(0.075, 0.14, 6), m.dark); tip.position.set(-0.05, 0.64, 0.27 * sd + 0.04 * sd); tip.rotation.x = -0.22 * sd; head.add(tip);
+          });
+          // 꼬리 (살랑살랑) — 카트 차체 쪽에 붙임
+          const tail = new THREE.Group(); tail.position.set(P.tail[0], P.tail[1], P.tail[2]); (tailParent || g).add(tail);
+          const ts = P.tailS || 1;
+          [[-0.2, 0.12, 0.2], [-0.48, 0.28, 0.27], [-0.8, 0.38, 0.3]].forEach(([x, y, r]) => ell(r * 1.2 * ts, r * ts, r * ts, m.fur, x * ts, y * ts, 0, tail));
+          ell(0.28 * ts, 0.23 * ts, 0.23 * ts, m.light, -1.1 * ts, 0.36 * ts, 0, tail);
+          return (sp, t) => {
+            tail.rotation.y = Math.sin(t * 4) * (0.18 + sp * 0.25);
+            tail.rotation.z = -sp * 0.12;
+            head.rotation.x = Math.sin(t * 2.2) * 0.03;
+          };
+        }
+
+        // ---- 돼지: 동글동글 몸통 + 짧은 팔다리 + 납작 코 + 접힌 귀 + 돌돌 말린 꼬리
+        function pig(g, P, tailParent) {
+          const m = M.pig;
+          const T = P.torso;
+          // 통통한 배 (구 형태)
+          const torso = ell(T.r2 * 1.18, T.h * 0.62, T.r2 * 1.12, m.fur, T.pos[0] + 0.02, T.pos[1] - 0.02, T.pos[2], g);
+          torso.rotation.z = T.rz || 0;
+          ell(0.42, 0.62, 0.8, m.light, 0.62, -0.02, 0, torso, false);  // 배
+          // 짧은 팔: 어깨를 손 쪽으로 당겨서 통통하고 짧게
+          [-1, 1].forEach((sd) => {
+            const hd = V(mirror(P.hand, sd));
+            const sh = V(mirror(P.shoulder, sd)).lerp(hd, 0.38);
+            limb(sh, hd, 0.13, m.fur, g, 0.115);
+            ell(0.11, 0.1, 0.11, m.dark, hd.x + 0.02, hd.y, hd.z, g);      // 앞발굽
+            if (P.hip) {
+              const hp = V(mirror(P.hip, sd)), ft0 = V(mirror(P.foot, sd));
+              const ft = hp.clone().lerp(ft0, 0.42);                      // 짧은 다리
+              limb(hp, ft, 0.13, m.fur, g, 0.12);
+              ell(0.12, 0.1, 0.12, m.dark, ft.x + 0.03, ft.y, ft.z, g);  // 뒷발굽
+            }
+          });
+          const head = new THREE.Group(); head.position.set(P.head[0], P.head[1] - 0.04, P.head[2]); head.scale.setScalar(P.headS || 1); g.add(head);
+          ell(0.5, 0.46, 0.52, m.fur, 0, 0, 0, head);
+          // 납작한 코 (원통) + 콧구멍
+          const snout = new THREE.Mesh(new THREE.CylinderGeometry(0.17, 0.185, 0.16, 22), m.snout);
+          snout.rotation.z = Math.PI / 2; snout.position.set(0.5, -0.1, 0); snout.scale.set(1, 1, 0.82); snout.castShadow = true; head.add(snout);
+          [-1, 1].forEach((sd) => {
+            ell(0.022, 0.05, 0.03, m.dark, 0.585, -0.1, 0.06 * sd, head, false);     // 콧구멍
+            ell(0.055, 0.075, 0.055, M.eye, 0.42, 0.1, 0.2 * sd, head, false);       // 눈
+            ell(0.02, 0.026, 0.02, M.shine, 0.468, 0.14, 0.215 * sd, head, false);
+            ell(0.12, 0.07, 0.1, M.blush, 0.38, -0.12, 0.31 * sd, head, false);      // 볼터치
+            // 앞으로 접힌 세모 귀
+            const ear = new THREE.Group(); ear.position.set(0.0, 0.34, 0.29 * sd); ear.rotation.set(-0.42 * sd, 0, -1.25); head.add(ear);
+            const eo = new THREE.Mesh(new THREE.ConeGeometry(0.17, 0.34, 4), m.fur); eo.position.y = 0.15; eo.scale.set(1, 1, 0.42); eo.castShadow = true; ear.add(eo);
+            const ei = new THREE.Mesh(new THREE.ConeGeometry(0.09, 0.2, 4), m.dark); ei.position.set(0.03, 0.12, 0); ei.scale.set(1, 1, 0.3); ear.add(ei);
+          });
+          // 돌돌 말린 꼬리 (엉덩이)
+          // 등받이가 있는 카트는 등받이 위로 보이게, 바이크는 엉덩이에
+          const tp = P.pigTail || P.rump;
+          const tail = new THREE.Group(); tail.position.set(tp[0], tp[1], tp[2]); tail.scale.setScalar(1.35); (P.pigTail ? tailParent : g).add(tail);
+          const pts = [];
+          for (let i = 0; i <= 48; i++) { const u = i / 48, a = u * Math.PI * 4.2, r = 0.075 * (1 - u * 0.35); pts.push(new THREE.Vector3(-0.02 - u * 0.16, r * Math.sin(a), r * (1 - Math.cos(a)))); }
+          const curlG = new THREE.Group(); curlG.rotation.z = -0.55; tail.add(curlG);
+          const curl = new THREE.Mesh(new THREE.TubeGeometry(new THREE.CatmullRomCurve3(pts), 90, 0.03, 8, false), m.fur);
+          curl.castShadow = true; curlG.add(curl);
+          ell(0.034, 0.034, 0.034, m.fur, pts[48].x, pts[48].y, pts[48].z, curlG, false);
+          return (sp, t) => {
+            tail.rotation.x = Math.sin(t * 9) * (0.35 + sp * 0.3);
+            tail.scale.setScalar(1 + Math.sin(t * 9 + 1) * 0.06);
+            head.rotation.x = Math.sin(t * 2.2) * 0.035;
+          };
+        }
+        const BUILDERS = { fox, pig };
+        // 카트에 레이서 탑재: driver 그룹은 고정, 내용물만 교체 가능
+        function mount(parent, pose, charId) {
+          const driver = new THREE.Group(); driver.position.set(pose.pos[0], pose.pos[1], pose.pos[2]); parent.add(driver);
+          const tailHost = new THREE.Group(); tailHost.position.set(pose.pos[0], pose.pos[1], pose.pos[2]); parent.add(tailHost);
+          let inner = null, anim = null, cur = null;
+          const set = (id) => {
+            if (!BUILDERS[id]) id = 'fox';
+            if (id === cur) return; cur = id;
+            if (inner) { driver.remove(inner); tailHost.remove(inner.userData.tail); }
+            inner = new THREE.Group(); driver.add(inner);
+            const tg = new THREE.Group(); tailHost.add(tg); inner.userData.tail = tg;
+            // 꼬리(여우)는 차체에 붙여 driver 기울기와 분리 / 돼지 꼬리는 몸통에
+            anim = BUILDERS[id](inner, Object.assign({}, pose), tg);
+          };
+          set(charId);
+          return {
+            driver, setChar: set, get charId() { return cur; },
+            update(k) { const sp = Math.min(1, Math.abs(k.speed) / (k.maxSpeed || 1)); anim && anim(sp, k.animPhase || 0); }
+          };
+        }
+        return { mount };
+      })();
+
+      // --------------------------------------------------------------------------
       // 6. 하이퍼 스포츠 슈퍼 카트 & 동글동글 레이서 3D 모델링 (+X 정면 정렬)
       // --------------------------------------------------------------------------
-      function buildCuteKartAndCharacter() {
+      function buildCuteKartAndCharacter(charId) {
         // 새 디자인: 민트 레트로 로드스터 + 여우 레이서 (+X 전방)
         const root = new THREE.Group();
         const body = new THREE.Group();
@@ -4884,42 +5145,9 @@
         for (let k = 0; k < 3; k++) { const sp = box(0.025, 0.46, 0.04, charcoal, 0, 0, 0, steeringWheel); sp.rotation.x = (k * Math.PI) / 3; }
         limb(new THREE.Vector3(0.62, 0.95, 0), new THREE.Vector3(0.5, 1.2, 0), 0.04, chrome, body);
 
-        // 7) 여우 레이서
-        const driver = new THREE.Group(); driver.position.set(-0.2, 1.0, 0); body.add(driver);
-        const torso = new THREE.Mesh(new THREE.CylinderGeometry(0.3, 0.38, 0.5, 14), jacket); torso.position.y = 0.25; torso.castShadow = true; driver.add(torso);
-        ell(0.1, 0.22, 0.34, cream, 0.3, 0.3, 0, driver, false);   // 재킷 지퍼 라인 느낌의 가슴 패치
-        [-1, 1].forEach((sd) => {
-          limb(new THREE.Vector3(0.05, 0.5, 0.34 * sd), new THREE.Vector3(0.72, 0.22, 0.24 * sd), 0.09, jacket, driver);
-          ell(0.11, 0.11, 0.11, cream, 0.72, 0.22, 0.24 * sd, driver);
-        });
-        const head = ell(0.48, 0.44, 0.48, fur, 0, 0.95, 0, driver);
-        ell(0.3, 0.18, 0.26, furLight, 0.4, 0.74, 0, driver);                       // 주둥이
-        ell(0.07, 0.06, 0.07, new THREE.MeshPhongMaterial({ color: 0x111111, shininess: 120 }), 0.69, 0.77, 0, driver, false); // 코
-        [-1, 1].forEach((sd) => {
-          ell(0.2, 0.15, 0.14, furLight, 0.26, 0.76, 0.3 * sd, driver, false);       // 볼
-          const ear = new THREE.Mesh(new THREE.ConeGeometry(0.17, 0.46, 6), fur); ear.position.set(-0.05, 1.42, 0.27 * sd); ear.rotation.x = -0.22 * sd; ear.castShadow = true; driver.add(ear);
-          const inner = new THREE.Mesh(new THREE.ConeGeometry(0.09, 0.3, 6), furLight); inner.position.set(0.0, 1.4, 0.27 * sd); inner.rotation.x = -0.22 * sd; driver.add(inner);
-          const lens = new THREE.Mesh(new THREE.CylinderGeometry(0.15, 0.15, 0.06, 18), new THREE.MeshPhongMaterial({ color: 0x0e7490, shininess: 250, specular: 0xffffff }));
-          lens.rotation.z = Math.PI / 2; lens.position.set(0.43, 1.03, 0.18 * sd); driver.add(lens);
-          const lr = new THREE.Mesh(new THREE.TorusGeometry(0.155, 0.03, 8, 18), chrome); lr.rotation.y = Math.PI / 2; lr.position.set(0.455, 1.03, 0.18 * sd); driver.add(lr);
-          ell(0.025, 0.04, 0.04, new THREE.MeshBasicMaterial({ color: 0xffffff }), 0.47, 1.08, 0.13 * sd + 0.03 * sd, driver, false);
-        });
-        const strap = new THREE.Mesh(new THREE.TorusGeometry(0.47, 0.05, 8, 24), charcoal); strap.rotation.x = Math.PI / 2; strap.position.y = 1.03; driver.add(strap);
-        const helmet = new THREE.Mesh(new THREE.SphereGeometry(0.52, 22, 14, 0, Math.PI * 2, 0, Math.PI * 0.42), paint);
-        helmet.position.y = 0.98; helmet.rotation.z = 0.3; helmet.castShadow = true; driver.add(helmet);
-        const helmetStripe = new THREE.Mesh(new THREE.TorusGeometry(0.5, 0.025, 6, 24, Math.PI), orange); helmetStripe.position.y = 1.0; helmetStripe.rotation.set(0, Math.PI / 2, 0.3); driver.add(helmetStripe);
-
-        // 목도리 (펄럭임)
-        const collar = new THREE.Mesh(new THREE.TorusGeometry(0.3, 0.09, 8, 18), scarfMat); collar.rotation.x = Math.PI / 2; collar.position.y = 0.55; driver.add(collar);
-        const scarfA = new THREE.Group(); scarfA.position.set(-0.28, 0.55, 0.08); driver.add(scarfA);
-        const sa = box(0.5, 0.03, 0.2, scarfMat, -0.25, 0, 0, scarfA);
-        const scarfB = new THREE.Group(); scarfB.position.x = -0.5; scarfA.add(scarfB);
-        box(0.45, 0.03, 0.2, scarfMat, -0.225, 0, 0, scarfB);
-
-        // 여우 꼬리 (살랑살랑)
-        const tailPivot = new THREE.Group(); tailPivot.position.set(-0.95, 1.15, 0); body.add(tailPivot);
-        [[-0.2, 0.12, 0.2], [-0.48, 0.28, 0.27], [-0.8, 0.38, 0.3]].forEach(([x, y, r]) => ell(r * 1.2, r, r, fur, x, y, 0, tailPivot));
-        ell(0.28, 0.23, 0.23, furLight, -1.1, 0.36, 0, tailPivot);
+        // 7) 레이서 (공용 캐릭터)
+        const racer = racerKit.mount(body, { pos: [-0.2, 1.0, 0], torso: { pos: [0, 0.25, 0], r1: 0.3, r2: 0.38, h: 0.5 }, shoulder: [0.05, 0.5, 0.34], hand: [0.72, 0.22, 0.24], head: [0, 0.95, 0], tail: [-0.75, 0.15, 0], rump: [-0.4, 0.2, 0], pigTail: [-0.8, 0.42, 0] }, charId);
+        const driver = racer.driver;
 
         // 8) 휠: 화이트월 타이어 + 크롬 림 + 오렌지 허브 + 휠 아치
         const wheels = [];
@@ -4944,23 +5172,16 @@
           wheels.push({ steerPivot, spinGroup, front: wc.front });
         });
 
-        const update = (k) => {
-          const sp = Math.min(1, Math.abs(k.speed) / k.maxSpeed), t = k.animPhase;
-          tailPivot.rotation.y = Math.sin(t * 4) * (0.18 + sp * 0.25);
-          tailPivot.rotation.z = -sp * 0.12;
-          scarfA.rotation.z = -(0.08 + sp * 0.4) + Math.sin(t * 13) * 0.05 * (0.4 + sp);
-          scarfB.rotation.z = -sp * 0.1 + Math.sin(t * 13 + 1.6) * 0.18 * (0.4 + sp);
-          scarfA.rotation.y = Math.sin(t * 9) * 0.06 * sp;
-        };
+        const update = (k) => racer.update(k);
 
         scene.add(root);
-        return { root, bodyTiltGroup: body, driverGroup: driver, steeringWheel, wheels, flames, update };
+        return { root, bodyTiltGroup: body, driverGroup: driver, setChar: racer.setChar, steeringWheel, wheels, flames, update };
       }
 
       // --------------------------------------------------------------------------
       // 6-2. 오토바이 「골든 스톰 블레이드」 (+X 전방) — 금빛 보디 + 은색 프레임 + 파란 윈드스크린
       // --------------------------------------------------------------------------
-      function buildGoldenStormBlade() {
+      function buildGoldenStormBlade(charId) {
         const root = new THREE.Group(), body = new THREE.Group(); root.add(body);
         const gold = new THREE.MeshPhongMaterial({ color: 0xffc21a, shininess: 170, specular: 0xfff3b0 });
         const goldDeep = new THREE.MeshPhongMaterial({ color: 0xf29a0c, shininess: 150, specular: 0xffe08a });
@@ -5154,26 +5375,9 @@
         [-1, 1].forEach((sd) => { const gr = new THREE.Mesh(new THREE.CylinderGeometry(0.05, 0.05, 0.2, 10), dark); gr.rotation.x = Math.PI / 2; gr.position.z = 0.4 * sd; bar.add(gr); });
         limb(new THREE.Vector3(1.2, 0.9, 0), new THREE.Vector3(0.82, 1.52, 0), 0.05, silver, body);
 
-        // 8) 여우 레이서 (앞으로 숙인 라이딩 자세)
-        const driver = new THREE.Group(); driver.position.set(-0.45, 1.25, 0); body.add(driver);
-        const torso = new THREE.Mesh(new THREE.CylinderGeometry(0.26, 0.3, 0.6, 14), jacket); torso.position.set(0.18, 0.3, 0); torso.rotation.z = -0.9; torso.castShadow = true; driver.add(torso);
-        [-1, 1].forEach((sd) => { limb(new THREE.Vector3(0.4, 0.5, 0.26 * sd), new THREE.Vector3(1.22, 0.3, 0.4 * sd), 0.07, jacket, driver); ell(0.09, 0.09, 0.09, silver, 1.22, 0.3, 0.4 * sd, driver); });
-        const fh = new THREE.Group(); fh.position.set(0.6, 0.75, 0); driver.add(fh);
-        ell(0.4, 0.37, 0.4, fur, 0, 0, 0, fh);
-        ell(0.25, 0.15, 0.22, furLight, 0.32, -0.12, 0, fh);
-        ell(0.06, 0.05, 0.06, dark, 0.55, -0.08, 0, fh, false);
-        [-1, 1].forEach((sd) => {
-          const ear = new THREE.Mesh(new THREE.ConeGeometry(0.14, 0.38, 6), fur); ear.position.set(-0.1, 0.42, 0.22 * sd); ear.rotation.x = -0.22 * sd; fh.add(ear);
-          const lens = new THREE.Mesh(new THREE.CylinderGeometry(0.12, 0.12, 0.05, 16), new THREE.MeshPhongMaterial({ color: 0x0e7490, shininess: 250, specular: 0xffffff })); lens.rotation.z = Math.PI / 2; lens.position.set(0.34, 0.06, 0.15 * sd); fh.add(lens);
-        });
-        const helmet = new THREE.Mesh(new THREE.SphereGeometry(0.43, 22, 14, 0, Math.PI * 2, 0, Math.PI * 0.42), gold); helmet.position.set(0, 0.03, 0); helmet.rotation.z = 0.3; fh.add(helmet);
-        const scarfA = new THREE.Group(); scarfA.position.set(0.0, 0.5, 0.06); driver.add(scarfA);
-        box(0.5, 0.03, 0.2, scarfMat, -0.25, 0, 0, scarfA);
-        const scarfB = new THREE.Group(); scarfB.position.x = -0.5; scarfA.add(scarfB);
-        box(0.45, 0.03, 0.2, scarfMat, -0.225, 0, 0, scarfB);
-        const tailPivot = new THREE.Group(); tailPivot.position.set(-1.6, 1.52, 0); body.add(tailPivot);
-        [[-0.1, 0.08, 0.16], [-0.34, 0.2, 0.22], [-0.62, 0.28, 0.25]].forEach(([x, y, r]) => ell(r * 1.2, r, r, fur, x, y, 0, tailPivot));
-        ell(0.24, 0.2, 0.2, furLight, -0.9, 0.28, 0, tailPivot);
+        // 8) 레이서 (공용 캐릭터, 앞으로 숙인 라이딩 자세)
+        const racer = racerKit.mount(body, { pos: [-0.45, 1.25, 0], torso: { pos: [0.18, 0.3, 0], r1: 0.26, r2: 0.3, h: 0.6, rz: -0.9 }, shoulder: [0.4, 0.5, 0.26], hand: [1.22, 0.3, 0.4], armR: 0.07, head: [0.6, 0.75, 0], headS: 0.84, tail: [-1.15, 0.27, 0], tailS: 0.8, rump: [-0.22, 0.2, 0] }, charId);
+        const driver = racer.driver;
 
         // 9) 부스터 불꽃 (배기구 2개) — 기존 카트와 같은 구조
         const flames = [];
@@ -5200,15 +5404,9 @@
           body.add(fg); flames.push(fg);
         });
 
-        const update = (k) => {
-          const sp = Math.min(1, Math.abs(k.speed) / k.maxSpeed), t = k.animPhase;
-          tailPivot.rotation.y = Math.sin(t * 4) * (0.18 + sp * 0.25);
-          tailPivot.rotation.z = -sp * 0.12;
-          scarfA.rotation.z = -(0.08 + sp * 0.4) + Math.sin(t * 13) * 0.05 * (0.4 + sp);
-          scarfB.rotation.z = -sp * 0.1 + Math.sin(t * 13 + 1.6) * 0.18 * (0.4 + sp);
-        };
+        const update = (k) => racer.update(k);
         root.visible = false; scene.add(root);
-        return { root, bodyTiltGroup: body, driverGroup: driver, steeringWheel, wheels, flames, update, skidX: -1.2, skidZ: 0.1 };
+        return { root, bodyTiltGroup: body, driverGroup: driver, setChar: racer.setChar, steeringWheel, wheels, flames, update, skidX: -1.2, skidZ: 0.1 };
       }
 
       // --------------------------------------------------------------------------
@@ -5216,7 +5414,7 @@
       //   크림슨 레드 바디(로프트 곡면, 길이 82%·높이 110%) + 은색 사이드 스웨시 + V자 노즈 + 옐로/블루 LED
       //   앞 쌍둥이 소형 휠 / 뒤 대형 휠 / 상어 지느러미 핀 / 스윕 리어 윙 / 여우 레이서
       // --------------------------------------------------------------------------
-      function buildParagon9() {
+      function buildParagon9(charId) {
         const root = new THREE.Group(), body = new THREE.Group(); root.add(body);
         // 차체 셸: 길이 82%, 높이 110% (레이서·바퀴는 이 그룹 밖)
         const LX = 0.82, LY = 1.1;
@@ -5454,48 +5652,9 @@
         for (let k = 0; k < 2; k++) { const sp = box(0.024, 0.38, 0.034, silver, 0, 0, 0, steeringWheel); sp.rotation.x = (k * Math.PI) / 2; }
         limb(new THREE.Vector3(0.7, 0.62, 0), new THREE.Vector3(0.58, 1.04, 0), 0.04, silver, body);
 
-        // 10) 여우 레이서 (다른 카트와 동일 캐릭터): 귀·고글·헬멧·목도리·꼬리
-        const fur = new THREE.MeshLambertMaterial({ color: 0xf28a2e });
-        const furLight = new THREE.MeshLambertMaterial({ color: 0xfff4e6 });
-        const jacket = new THREE.MeshLambertMaterial({ color: 0x24324a });
-        const scarfMat = new THREE.MeshLambertMaterial({ color: 0xff4d5e });
-        const charcoal = new THREE.MeshLambertMaterial({ color: 0x1f2937 });
-        const driver = new THREE.Group(); driver.position.set(-0.45, 0.68, 0); body.add(driver);
-        const torso = new THREE.Mesh(new THREE.CylinderGeometry(0.3, 0.38, 0.5, 14), jacket); torso.position.y = 0.25; torso.castShadow = true; driver.add(torso);
-        ell(0.1, 0.22, 0.34, furLight, 0.3, 0.3, 0, driver);
-        [-1, 1].forEach((sd) => {
-          limb(new THREE.Vector3(0.05, 0.5, 0.34 * sd), new THREE.Vector3(0.98, 0.4, 0.22 * sd), 0.09, jacket, driver);
-          ell(0.11, 0.11, 0.11, furLight, 1.03, 0.4, 0.22 * sd, driver);
-          limb(new THREE.Vector3(0.1, 0.14, 0.17 * sd), new THREE.Vector3(0.82, 0.12, 0.2 * sd), 0.1, jacket, driver);
-        });
-        const head = ell(0.48, 0.44, 0.48, fur, 0, 0.95, 0, driver);
-        ell(0.3, 0.18, 0.26, furLight, 0.4, 0.74, 0, driver);                       // 주둥이
-        ell(0.07, 0.06, 0.07, new THREE.MeshPhongMaterial({ color: 0x111111, shininess: 120 }), 0.69, 0.77, 0, driver); // 코
-        [-1, 1].forEach((sd) => {
-          ell(0.2, 0.15, 0.14, furLight, 0.26, 0.76, 0.3 * sd, driver);             // 볼
-          const ear = new THREE.Mesh(new THREE.ConeGeometry(0.17, 0.46, 6), fur); ear.position.set(-0.05, 1.42, 0.27 * sd); ear.rotation.x = -0.22 * sd; ear.castShadow = true; driver.add(ear);
-          const inner = new THREE.Mesh(new THREE.ConeGeometry(0.09, 0.3, 6), furLight); inner.position.set(0.0, 1.4, 0.27 * sd); inner.rotation.x = -0.22 * sd; driver.add(inner);
-          const lens = new THREE.Mesh(new THREE.CylinderGeometry(0.15, 0.15, 0.06, 18), new THREE.MeshPhongMaterial({ color: 0x0e7490, shininess: 250, specular: 0xffffff }));
-          lens.rotation.z = Math.PI / 2; lens.position.set(0.43, 1.03, 0.18 * sd); driver.add(lens);
-          const lr = new THREE.Mesh(new THREE.TorusGeometry(0.155, 0.03, 8, 18), silver); lr.rotation.y = Math.PI / 2; lr.position.set(0.455, 1.03, 0.18 * sd); driver.add(lr);
-          ell(0.025, 0.04, 0.04, new THREE.MeshBasicMaterial({ color: 0xffffff }), 0.47, 1.08, 0.16 * sd, driver);
-        });
-        const strap = new THREE.Mesh(new THREE.TorusGeometry(0.47, 0.05, 8, 24), charcoal); strap.rotation.x = Math.PI / 2; strap.position.y = 1.03; driver.add(strap);
-        const helmet = new THREE.Mesh(new THREE.SphereGeometry(0.52, 22, 14, 0, Math.PI * 2, 0, Math.PI * 0.42), red);
-        helmet.position.y = 0.98; helmet.rotation.z = 0.3; helmet.castShadow = true; driver.add(helmet);
-        const helmetStripe = new THREE.Mesh(new THREE.TorusGeometry(0.5, 0.025, 6, 24, Math.PI), silver); helmetStripe.position.y = 1.0; helmetStripe.rotation.set(0, Math.PI / 2, 0.3); driver.add(helmetStripe);
-
-        // 목도리 (펄럭임)
-        const collar = new THREE.Mesh(new THREE.TorusGeometry(0.3, 0.09, 8, 18), scarfMat); collar.rotation.x = Math.PI / 2; collar.position.y = 0.55; driver.add(collar);
-        const scarfA = new THREE.Group(); scarfA.position.set(-0.28, 0.55, 0.08); driver.add(scarfA);
-        box(0.5, 0.03, 0.2, scarfMat, -0.25, 0, 0, scarfA);
-        const scarfB = new THREE.Group(); scarfB.position.x = -0.5; scarfA.add(scarfB);
-        box(0.45, 0.03, 0.2, scarfMat, -0.225, 0, 0, scarfB);
-
-        // 여우 꼬리 (살랑살랑)
-        const tailPivot = new THREE.Group(); tailPivot.position.set(-1.0, 1.12, 0); body.add(tailPivot);
-        [[-0.2, 0.12, 0.2], [-0.48, 0.28, 0.27], [-0.8, 0.38, 0.3]].forEach(([x, y, r]) => ell(r * 1.2, r, r, fur, x, y, 0, tailPivot));
-        ell(0.28, 0.23, 0.23, furLight, -1.1, 0.36, 0, tailPivot);
+        // 10) 레이서 (공용 캐릭터)
+        const racer = racerKit.mount(body, { pos: [-0.45, 0.68, 0], torso: { pos: [0, 0.25, 0], r1: 0.3, r2: 0.38, h: 0.5 }, shoulder: [0.05, 0.5, 0.34], hand: [0.98, 0.4, 0.22], head: [0, 0.95, 0], hip: [0.1, 0.14, 0.17], foot: [0.82, 0.12, 0.2], tail: [-0.55, 0.44, 0], rump: [-0.4, 0.2, 0], pigTail: [-0.66, 0.5, 0] }, charId);
+        const driver = racer.driver;
 
         // 11) 휠: 앞 쌍둥이 소형(삼각 스포크) / 뒤 대형(6스포크) + 레드 오렌지 링
         const wheels = [];
@@ -5541,20 +5700,15 @@
           const tm = new THREE.Mesh(new THREE.TubeGeometry(new THREE.CatmullRomCurve3(trim), 30, 0.035, 6, false), silver); body.add(tm);
         });
 
-        const update = (k) => {
-          const sp = Math.min(1, Math.abs(k.speed) / k.maxSpeed), t = k.animPhase;
-          tailPivot.rotation.y = Math.sin(t * 4) * (0.18 + sp * 0.25);
-          tailPivot.rotation.z = -sp * 0.12;
-          scarfA.rotation.z = -(0.08 + sp * 0.4) + Math.sin(t * 13) * 0.05 * (0.4 + sp);
-          scarfB.rotation.z = -sp * 0.1 + Math.sin(t * 13 + 1.6) * 0.18 * (0.4 + sp);
-          scarfA.rotation.y = Math.sin(t * 9) * 0.06 * sp;
-        };
+        const update = (k) => racer.update(k);
 
         root.visible = false; scene.add(root);
-        return { root, bodyTiltGroup: body, driverGroup: driver, steeringWheel, wheels, flames, update, skidX: REAR_X, skidZ: REAR_Z };
+        return { root, bodyTiltGroup: body, driverGroup: driver, setChar: racer.setChar, steeringWheel, wheels, flames, update, skidX: REAR_X, skidZ: REAR_Z };
       }
 
-      const kartRigs = { kart: buildCuteKartAndCharacter(), bike: buildGoldenStormBlade(), paragon9: buildParagon9() };
+      let currentChar = 'fox';
+      try { const c0 = localStorage.getItem('kkudeokChar'); if (CHAR_IDS.includes(c0)) currentChar = c0; } catch (_) {}
+      const kartRigs = { kart: buildCuteKartAndCharacter(currentChar), bike: buildGoldenStormBlade(currentChar), paragon9: buildParagon9(currentChar) };
       kartRigs.kart.skidX = -1.16; kartRigs.kart.skidZ = 1.14;
       let kartRig = kartRigs.kart, currentVehicle = 'kart';
       function setVehicle(id) {
@@ -5563,10 +5717,20 @@
         kart.maxSpeed = (VEH_STATS[id] || VEH_STATS.kart).maxSpeed;
         Object.keys(kartRigs).forEach((k) => { kartRigs[k].root.visible = (k === id); });
         try { localStorage.setItem('kkudeokVehicle', id); } catch (_) {}
-        document.querySelectorAll('.veh-card').forEach((c) => c.classList.toggle('active', c.dataset.veh === id));
+        document.querySelectorAll('.veh-card[data-veh]').forEach((c) => c.classList.toggle('active', c.dataset.veh === id));
         try { mp.onVeh(id); } catch (_) {}
       }
       try { setVehicle(localStorage.getItem('kkudeokVehicle') || 'kart'); } catch (_) { setVehicle('kart'); }
+      // 멀티플레이 동기화 키: "탈것.캐릭터" (예: kart.pig)
+      const rigKey = () => currentVehicle + '.' + currentChar;
+      function setChar(id) {
+        if (!CHAR_IDS.includes(id)) id = 'fox';
+        currentChar = id;
+        Object.keys(kartRigs).forEach((k) => kartRigs[k].setChar(id));
+        try { localStorage.setItem('kkudeokChar', id); } catch (_) {}
+        document.querySelectorAll('.char-card').forEach((c) => c.classList.toggle('active', c.dataset.char === id));
+        try { mp.onVeh(currentVehicle); } catch (_) {}
+      }
 
       // --------------------------------------------------------------------------
       // 멀티플레이: 방 코드로 친구와 함께 (각자 주행 → 위치만 동기화, 카트끼리 충돌 없음)
@@ -5581,7 +5745,26 @@
         const cdEl = $('mpCountdown'), pillEl = $('mpWaitPill'), bannerEl = $('mpEndBanner'), pv = $('podiumView');
         const podium = { active: false, scene: null, cam: null, t0: 0, conf: null, timer: 0 };
         const remotes = new Map();
+        // ---- 플레이어 색 마크 (빨/노/초/파/보/주) : 방 코드+참가자 id로 시드된 셔플 → 모든 접속자 화면에서 동일 ----
+        const MARKS = ['#ef4444', '#facc15', '#22c55e', '#3b82f6', '#a855f7', '#fb923c'];
+        let markMap = new Map(), markOrder = MARKS.slice();
+        function assignMarks(seedExtra) {
+          const ids = players.map((p) => p.id).sort((a, b) => a - b);
+          let h = 2166136261 >>> 0;
+          const str = code + '|' + (seedExtra || '') + '|' + ids.join(',');
+          for (let i = 0; i < str.length; i++) { h ^= str.charCodeAt(i); h = Math.imul(h, 16777619) >>> 0; }
+          const rnd = () => { h = (h + 0x6D2B79F5) >>> 0; let t = h; t = Math.imul(t ^ (t >>> 15), t | 1); t ^= t + Math.imul(t ^ (t >>> 7), t | 61); return ((t ^ (t >>> 14)) >>> 0) / 4294967296; };
+          const arr = MARKS.slice();
+          for (let i = arr.length - 1; i > 0; i--) { const j = Math.floor(rnd() * (i + 1)); const t = arr[i]; arr[i] = arr[j]; arr[j] = t; }
+          markOrder = arr; markMap = new Map(); ids.forEach((id, i) => markMap.set(id, arr[i % arr.length]));
+        }
+        function markOf(id) {
+          let c = markMap.get(id);
+          if (!c) { const used = new Set(markMap.values()); c = markOrder.find((x) => !used.has(x)) || markOrder[markMap.size % markOrder.length]; markMap.set(id, c); }
+          return c;
+        }
         const BUILD = { kart: buildCuteKartAndCharacter, bike: buildGoldenStormBlade, paragon9: buildParagon9 };
+        const buildRig = (key) => { const [v, c] = String(key || 'kart').split('.'); return (BUILD[v] || BUILD.kart)(c || 'fox'); };
         const tx = (o) => { if (ws && ws.readyState === 1) ws.send(JSON.stringify(o)); };
         const setMsg = (t, err) => { [lobbyMsg, roomMsg].forEach((el) => { el.textContent = t || ''; el.style.color = err ? '#ff8a8a' : 'var(--muted)'; }); };
         const esc = (t) => String(t).replace(/[&<>"']/g, '');
@@ -5607,7 +5790,7 @@
           const pf = new THREE.Mesh(new THREE.CylinderGeometry(2.7, 2.9, 0.3, 40), new THREE.MeshStandardMaterial({ color: 0x1f2c4d, roughness: 0.5, metalness: 0.3 }));
           pf.position.y = -0.15; stage.scene.add(pf); }
         function makeShowRig(vId) {
-          const rig = (BUILD[vId] || BUILD.kart)();
+          const rig = buildRig(vId);
           const root = rig.root;
           try { if (root.parent) root.parent.remove(root); } catch (_) {}
           try { if (rig.flames) rig.flames.forEach((f) => { f.visible = false; }); } catch (_) {}
@@ -5652,7 +5835,7 @@
           return true;
         }
 
-        const vName = (v) => (v === 'bike' ? '블레이드' : v === 'paragon9' ? '파라곤9' : '로드스터');
+        const vName = (v0) => { const v = String(v0 || '').split('.')[0]; return (v === 'bike' ? '블레이드' : v === 'paragon9' ? '파라곤9' : '로드스터'); };
         function showView() {
           const isHost = myId === hostId;
           $('roomTitle').textContent = party.title || '신나게 달려볼까!';
@@ -5709,6 +5892,7 @@
         }
         function startRace(mapId) {
           room.classList.remove('open'); setScreen(); results = [];
+          assignMarks(mapId);
           if (vehOpen) showVehSelect(false);
           deadline = 0; ending = false; cdEl.style.display = 'none'; pillEl.style.display = 'none'; bannerEl.style.display = 'none';
           const go = () => {
@@ -5729,7 +5913,7 @@
           let r = remotes.get(id);
           if (r && r.vId !== vId) { scene.remove(r.rig.root); remotes.delete(id); r = null; }
           if (!r) {
-            const rig = (BUILD[vId] || BUILD.kart)();
+            const rig = buildRig(vId);
             if (rig.root.parent !== scene) scene.add(rig.root);
             rig.root.add(makeTag(name));
             r = { rig, vId, name, init: false, tx: 0, ty: 0, tz: 0, th: 0, b: 0, p: 0 };
@@ -5775,7 +5959,7 @@
           const rows = [{ id: myId, name: myName(), p: (race.currentLap - 1) + (kart.trackT || 0), me: true }];
           remotes.forEach((r, id) => rows.push({ id, name: r.name, p: r.p }));
           rows.sort((a, b) => { const da = done.get(a.id), db = done.get(b.id); if (da && db) return da.i - db.i; if (da) return -1; if (db) return 1; return b.p - a.p; });
-          rankEl.innerHTML = rows.map((r, i) => { const d = done.get(r.id); return '<div class="r' + (r.me ? ' me' : '') + '"><span>' + (i + 1) + '. ' + esc(r.name) + '</span><span>' + (d ? fmt(d.ms) : '') + '</span></div>'; }).join('');
+          rankEl.innerHTML = rows.map((r, i) => { const d = done.get(r.id); return '<div class="r' + (r.me ? ' me' : '') + '"><span><i class="mk" style="background:' + markOf(r.id) + '"></i>' + (i + 1) + '. ' + esc(r.name) + '</span><span>' + (d ? fmt(d.ms) : '') + '</span></div>'; }).join('');
           rankEl.style.display = rows.length > 1 ? 'block' : 'none';
         }
         requestAnimationFrame(tick);
@@ -5816,7 +6000,7 @@
             const num = new THREE.Mesh(new THREE.PlaneGeometry(2.4, 2.4), new THREE.MeshBasicMaterial({ map: numTex(i + 1, sl.tc), transparent: true }));
             num.position.set(sl.x, sl.h / 2, 2.21); sc.add(num);
             const p = top[i]; if (!p) return;
-            const rig = (BUILD[p.v] || BUILD.kart)();
+            const rig = buildRig(p.v);
             try { if (rig.root.parent) rig.root.parent.remove(rig.root); } catch (_) {}
             try { if (rig.flames) rig.flames.forEach((f) => { f.visible = false; }); } catch (_) {}
             rig.root.position.set(0, 0, 0); rig.root.rotation.set(0, 0, 0); rig.root.scale.setScalar(1); rig.root.visible = true;
@@ -5895,7 +6079,7 @@
           lobby.classList.remove('open'); pcDlg.classList.remove('open'); clearInterval(listTimer); setScreen();
           try { if (listWs) { listWs.onclose = null; listWs.onerror = null; listWs.close(); listWs = null; } } catch (_) {}
         }
-        const joinParty = (c, viaList) => connect({ t: 'join', code: c, name: myName(), v: currentVehicle, list: !!viaList });
+        const joinParty = (c, viaList) => connect({ t: 'join', code: c, name: myName(), v: rigKey(), list: !!viaList });
         $('mpBtn').addEventListener('click', (e) => { e.stopPropagation(); if (race.phase === 'menu' && !inRoom) openLobby(); });
         $('partyList').addEventListener('click', (e) => { const b = e.target.closest('button[data-code]'); if (b && !b.disabled) joinParty(b.dataset.code, true); });
         $('lobbyBack').addEventListener('click', () => { closeLobby(); container.focus(); });
@@ -5909,7 +6093,7 @@
         $('pcOk').addEventListener('click', () => {
           const title = $('pcName').value.trim().slice(0, 20) || '신나게 달려볼까!';
           pcDlg.classList.remove('open');
-          connect({ t: 'create', name: myName(), v: currentVehicle, title, public: pcVis === 'public', max: pcMax });
+          connect({ t: 'create', name: myName(), v: rigKey(), title, public: pcVis === 'public', max: pcMax });
         });
 
         // ---- 파티 화면 ----
@@ -5929,6 +6113,12 @@
 
         return {
           active() { return inRoom; },
+          myColor() { return markOf(myId); },
+          marks() {   // 미니맵용: 보이는 상대 라이더들의 위치/방향/색
+            const out = [];
+            remotes.forEach((r, id) => { const o = r.rig.root; if (r.init && o.visible) out.push({ x: o.position.x, z: o.position.z, h: o.rotation.y, color: markOf(id) }); });
+            return out;
+          },
           renderPodium,
           onFinish(ms) { if (inRoom) { tx({ t: 'finish', ms: Math.round(ms) }); if (!ending) pillEl.style.display = 'block'; } },
           onMenu() {
@@ -5937,7 +6127,7 @@
             deadline = 0; cdEl.style.display = 'none'; pillEl.style.display = 'none';
             room.classList.add('open'); setScreen(); showView();
           },
-          onVeh(id) { if (inRoom) tx({ t: 'veh', v: id }); }
+          onVeh() { if (inRoom) tx({ t: 'veh', v: rigKey() }); }
         };
       })();
 
@@ -5955,7 +6145,7 @@
         const target = new THREE.WebGLRenderTarget(W, H);
         const buf = new Uint8Array(W * H * 4);
         const cards = {};
-        document.querySelectorAll('.veh-card').forEach((c) => {
+        document.querySelectorAll('.veh-card[data-veh]').forEach((c) => {
           const box = c.querySelector('.vimg'), cv = document.createElement('canvas');
           cv.width = W; cv.height = H; cv.style.display = 'none'; box.appendChild(cv);
           const ctx = cv.getContext('2d');
@@ -6009,6 +6199,104 @@
       })();
 
       // --------------------------------------------------------------------------
+      // 차고 오른쪽 3D 미리보기: 전용 렌더러 + 전용 리그(현재 카트 + 현재 캐릭터), 드래그 회전
+      // --------------------------------------------------------------------------
+      const garage3d = (() => {
+        const cv = document.getElementById('garageCanvas');
+        const capChar = document.getElementById('gCapChar'), capKart = document.getElementById('gCapKart');
+        const BUILD = { kart: buildCuteKartAndCharacter, bike: buildGoldenStormBlade, paragon9: buildParagon9 };
+        let gr = null, failed = false;
+        const gScene = new THREE.Scene();
+        gScene.add(new THREE.HemisphereLight(0xffffff, 0x8a97a8, 0.62));
+        const sun = new THREE.DirectionalLight(0xffffff, 0.62); sun.position.set(4, 8, 5); sun.castShadow = true;
+        sun.shadow.mapSize.set(1024, 1024); Object.assign(sun.shadow.camera, { left: -4, right: 4, top: 4, bottom: -4, near: 0.5, far: 30 });
+        gScene.add(sun);
+        const rim = new THREE.DirectionalLight(0xbfd8ff, 0.28); rim.position.set(-5, 3, -4); gScene.add(rim);
+        const floor = new THREE.Mesh(new THREE.CircleGeometry(3.4, 48), new THREE.MeshLambertMaterial({ color: 0xcfd8e4 }));
+        floor.rotation.x = -Math.PI / 2; floor.position.y = -0.005; floor.receiveShadow = true; gScene.add(floor);
+        const ring = new THREE.Mesh(new THREE.RingGeometry(3.3, 3.42, 64), new THREE.MeshBasicMaterial({ color: 0xffb62e }));
+        ring.rotation.x = -Math.PI / 2; gScene.add(ring);
+        const cam = new THREE.PerspectiveCamera(30, 1, 0.1, 100);
+        const rigs = {};
+        let tab = 'char', yaw = 1.05, pitch = 0.22, idle = 0, dragging = false, lastX = 0, lastY = 0, last = 0;
+        const view = { tx: 0, ty: 0.9, tz: 0, dist: 9 }, goal = { tx: 0, ty: 0.9, tz: 0, dist: 9 };
+        const KART_NAMES = { kart: '민트 로드스터 카트', bike: '골든 스톰 블레이드', paragon9: '파라곤9' };
+
+        function rigFor(v) {
+          if (rigs[v]) return rigs[v];
+          const r = (BUILD[v] || BUILD.kart)(currentChar);
+          gScene.add(r.root); r.root.position.set(0, 0, 0); r.root.rotation.set(0, 0, 0); r.root.visible = true;
+          r.flames.forEach((f) => { f.visible = false; });
+          r.root.updateMatrixWorld(true);
+          const bb = new THREE.Box3().setFromObject(r.root), size = new THREE.Vector3(), ctr = new THREE.Vector3();
+          bb.getSize(size); bb.getCenter(ctr);
+          r.gFit = { cx: ctr.x, cy: ctr.y, cz: ctr.z, dist: Math.max(Math.hypot(size.x, size.z) * 1.15, size.y * 1.7) / (2 * Math.tan(15 * Math.PI / 180)) * 0.62 };
+          const hp = new THREE.Vector3(); r.driverGroup.getWorldPosition(hp);
+          r.gHead = { x: hp.x + 0.05, y: hp.y + 0.62, z: hp.z };
+          rigs[v] = r; return r;
+        }
+        function setTab(t) { tab = t; idle = 0; }
+        cv.addEventListener('pointerdown', (e) => { dragging = true; lastX = e.clientX; lastY = e.clientY; cv.classList.add('drag'); try { cv.setPointerCapture(e.pointerId); } catch (_) {} e.stopPropagation(); });
+        cv.addEventListener('pointermove', (e) => {
+          if (!dragging) return;
+          yaw -= (e.clientX - lastX) * 0.01; pitch = Math.max(0.02, Math.min(0.9, pitch + (e.clientY - lastY) * 0.006));
+          lastX = e.clientX; lastY = e.clientY; idle = 0;
+        });
+        const up = () => { dragging = false; cv.classList.remove('drag'); };
+        cv.addEventListener('pointerup', up); cv.addEventListener('pointercancel', up);
+        cv.addEventListener('wheel', (e) => { e.preventDefault(); goal.zoom = Math.max(0.6, Math.min(1.6, (goal.zoom || 1) * (e.deltaY > 0 ? 1.08 : 0.93))); }, { passive: false });
+
+        function render(nowMs) {
+          if (failed) return;
+          const dt = last ? Math.min(0.1, (nowMs - last) / 1000) : 0.016; last = nowMs;
+          try {
+            if (!gr) {
+              gr = new THREE.WebGLRenderer({ canvas: cv, antialias: true, alpha: true });
+              gr.shadowMap.enabled = true; gr.shadowMap.type = THREE.PCFSoftShadowMap;
+              gr.setClearColor(0x000000, 0);
+            }
+            const w = cv.clientWidth, h = cv.clientHeight;
+            if (!w || !h) return;
+            const pr = Math.min(window.devicePixelRatio || 1, 2);
+            if (cv.width !== Math.round(w * pr) || cv.height !== Math.round(h * pr)) { gr.setPixelRatio(pr); gr.setSize(w, h, false); }
+            cam.aspect = w / h; cam.updateProjectionMatrix();
+            const rig = rigFor(currentVehicle);
+            Object.keys(rigs).forEach((k) => { rigs[k].root.visible = (k === currentVehicle); });
+            rig.setChar(currentChar);
+            rig.update({ speed: 0, maxSpeed: 1, animPhase: nowMs / 1000 });
+            const portraitFit = Math.max(1, 1.25 / cam.aspect);
+            if (tab === 'char') { goal.tx = rig.gHead.x; goal.ty = rig.gHead.y - 0.35; goal.tz = rig.gHead.z; goal.dist = 7.4 * portraitFit; }
+            else { goal.tx = rig.gFit.cx; goal.ty = rig.gFit.cy; goal.tz = rig.gFit.cz; goal.dist = rig.gFit.dist * portraitFit; }
+            const a = 1 - Math.exp(-dt * 6);
+            ['tx', 'ty', 'tz'].forEach((k) => { view[k] += (goal[k] - view[k]) * a; });
+            view.dist += (goal.dist * (goal.zoom || 1) - view.dist) * a;
+            idle += dt; if (!dragging && idle > 2.5) yaw += dt * 0.45;
+            cam.position.set(view.tx + Math.sin(yaw) * Math.cos(pitch) * view.dist, view.ty + Math.sin(pitch) * view.dist, view.tz + Math.cos(yaw) * Math.cos(pitch) * view.dist);
+            cam.lookAt(view.tx, view.ty, view.tz);
+            gr.render(gScene, cam);
+            const ch = CHAR_LIST.find((c) => c.id === currentChar);
+            if (capChar.textContent !== (ch ? ch.name : '')) capChar.textContent = ch ? ch.name : '';
+            if (capKart.textContent !== KART_NAMES[currentVehicle]) capKart.textContent = KART_NAMES[currentVehicle] || '';
+          } catch (err) { failed = true; console.warn('garage 3d disabled', err); }
+        }
+        return { render, setTab };
+      })();
+      // 차고 탭 (캐릭터 / 카트)
+      (function setupGarageTabs() {
+        const tabs = Array.from(document.querySelectorAll('.g-tab')), title = document.getElementById('gTitle');
+        tabs.forEach((b) => b.addEventListener('click', (e) => {
+          e.stopPropagation();
+          const t = b.dataset.tab;
+          tabs.forEach((x) => { x.classList.toggle('on', x === b); x.setAttribute('aria-selected', x === b ? 'true' : 'false'); });
+          document.querySelectorAll('.g-list').forEach((l) => l.classList.toggle('hidden', l.dataset.panel !== t));
+          title.textContent = t === 'char' ? '캐릭터 선택' : '카트바디 선택';
+          garage3d.setTab(t);
+        }));
+        document.querySelectorAll('.char-card').forEach((c) => c.addEventListener('click', (e) => { e.stopPropagation(); setChar(c.dataset.char); }));
+        document.querySelectorAll('.char-card').forEach((c) => c.classList.toggle('active', c.dataset.char === currentChar));
+      })();
+
+      // --------------------------------------------------------------------------
       // 7. 드리프트 타이어 스키드마크 리본, 연기, 마찰 스파크 애니메이션 시스템
       // --------------------------------------------------------------------------
       const driftEffects = (() => {
@@ -6036,7 +6324,111 @@
         let prevR = new THREE.Vector3();
 
         const particles = [];
-        const sparkGeo = new THREE.BoxGeometry(0.16, 0.16, 0.16);
+        // ===== 뒷바퀴 뒤 스파클 (톱니 모양 직각삼각형, 뾰족한 부분만 위아래로 불규칙하게 움직임) =====
+        // 바퀴에서 시작해 뒤쪽으로 갈수록 높아지는 직각삼각형(뒤쪽 끝 수직). 윗변은 뾰족한 톱니.
+        // 삼각형 자체는 제자리에 고정, 톱니 끝 높이만 제각각 위아래로 불규칙하게 출렁임. 좌우 두 장이 바깥으로 벌어져 있음.
+        const SPK_TEETH = 8;
+        const SPK_PTS = SPK_TEETH * 2 + 1;
+        const SPK_PALETTES = {
+          yellow: 0xffe266,
+          red:    0xffffff,   // 25° 이상: 빨강 → 흰색
+          purple: 0xf0abfc,
+          blue:   0x9be0ff
+        };
+        const spkSmooth = (x) => { x = Math.max(0, Math.min(1, x)); return x * x * (3 - 2 * x); };
+        const spkRand = (a, b) => a + Math.random() * (b - a);
+
+        function createSparkleFx() {
+          const group = new THREE.Group();
+          group.visible = false;
+          scene.add(group);
+          const mat = new THREE.MeshBasicMaterial({ color: 0xffffff, transparent: true, opacity: 0.8, side: THREE.DoubleSide, depthWrite: false });
+          // 좌/우 두 장: 바깥쪽으로 눕고 뒤로 살짝 벌어짐 (모양은 고정)
+          const fins = [-1, 1].map((side) => {
+            const geo = new THREE.BufferGeometry();
+            geo.setAttribute('position', new THREE.BufferAttribute(new Float32Array((SPK_PTS - 1) * 6 * 3), 3));
+            const mesh = new THREE.Mesh(geo, mat);
+            mesh.rotation.order = 'YXZ';
+            mesh.rotation.set(side * 0.95, -side * 0.22, 0);
+            mesh.frustumCulled = false; mesh.renderOrder = 25;
+            group.add(mesh);
+            // 톱니 끝 높이: 현재값 / 목표값 (이 값만 위아래로 움직임)
+            const cur = [], tgt = [];
+            for (let i = 0; i < SPK_TEETH; i++) { cur.push(spkRand(0.5, 1)); tgt.push(spkRand(0.4, 1)); }
+            // 톱니 위치는 고정, 장마다 약간 다르게
+            const tipT = [];
+            for (let i = 0; i < SPK_TEETH; i++) tipT.push(Math.min(1, (i + 1) / SPK_TEETH + (i < SPK_TEETH - 1 ? spkRand(-0.03, 0.02) : 0)));
+            return { side, mesh, geo, cur, tgt, tipT };
+          });
+          let inten = 0, Lc = 1.6, Hc = 0.7, lastTime = 0, curKind = 'yellow', curMode = 'both';
+
+          function hide() { inten = 0; group.visible = false; }
+
+          function draw(time, dt, kind, scale, active) {
+            curKind = kind;
+            inten += ((active ? 1 : 0) - inten) * Math.min(1, dt * (active ? 10 : 12));
+            if (!active && inten < 0.02) { hide(); return; }
+            group.visible = true;
+            const e = spkSmooth(inten);
+            group.scale.set(scale * (0.3 + 0.7 * e), scale * e, scale);
+            mat.color.setHex(SPK_PALETTES[kind]);
+            mat.opacity = 0.8 * Math.min(1, inten * 1.5);
+            const L = Lc, H = Hc;
+            for (const f of fins) {
+              // 표시할 쪽만 그림 ('both' = 좌우 둘 다, -1/1 = 한쪽만)
+              f.mesh.visible = curMode === 'both' || curMode === f.side;
+              if (!f.mesh.visible) continue;
+              // 톱니 끝 높이만 불규칙한 타이밍으로 새 목표를 잡고 빠르게 따라감
+              for (let i = 0; i < SPK_TEETH; i++) {
+                if (Math.random() < dt * 13) f.tgt[i] = spkRand(0.35, 1);
+                f.cur[i] += (f.tgt[i] - f.cur[i]) * Math.min(1, dt * 26);
+              }
+              const pts = [[0, 0]];
+              let prevT = 0;
+              for (let i = 0; i < SPK_TEETH; i++) {
+                const tt = f.tipT[i];
+                const tv = prevT + (tt - prevT) * 0.55;               // 골 위치
+                const yv = tv * 0.42;                                  // 골 높이 (고정)
+                const yt = i === SPK_TEETH - 1 ? (0.82 + 0.18 * f.cur[i]) : Math.min(1, tt * (0.72 + 0.4 * f.cur[i])); // 톱니 끝 높이만 변화
+                pts.push([tv, yv]);
+                pts.push([tt, yt]);
+                prevT = tt;
+              }
+              const arr = f.geo.attributes.position.array;
+              let q = 0;
+              for (let i = 0; i < SPK_PTS - 1; i++) {
+                const a = pts[i], b2 = pts[i + 1];
+                const x0 = a[0] * L, x1 = b2[0] * L, y0 = a[1] * H, y1 = b2[1] * H;
+                const quad = [x0, 0, x1, 0, x0, y0, x1, 0, x1, y1, x0, y0];
+                for (let v = 0; v < 6; v++) { arr[q++] = quad[v * 2]; arr[q++] = quad[v * 2 + 1]; arr[q++] = 0; }
+              }
+              f.geo.attributes.position.needsUpdate = true;
+            }
+          }
+
+          function update(pos, yaw, kind, time, power, backK, scale, mode) {
+            const dt = Math.min(0.05, Math.max(0.001, time - lastTime)); lastTime = time;
+            curMode = mode || 'both';
+            const Lt = 1.5 + backK * 0.7 + power * 0.5;
+            const Ht = 0.7 + power * 0.45;
+            if (inten < 0.02) { Lc = Lt; Hc = Ht; }
+            Lc += (Lt - Lc) * Math.min(1, dt * 7);
+            Hc += (Ht - Hc) * Math.min(1, dt * 7);
+            group.position.set(pos.x, pos.y + 0.06, pos.z);
+            group.rotation.y = Math.PI + yaw; // 로컬 +x 가 차량 뒤쪽
+            draw(time, dt, kind, scale, true);
+          }
+          function release(time) {
+            if (!group.visible) return;
+            const dt = Math.min(0.05, Math.max(0.001, time - lastTime)); lastTime = time;
+            draw(time, dt, curKind, group.scale.z || 1, false);
+          }
+          return { update, release, hide };
+        }
+        const sparkleFx = [createSparkleFx(), createSparkleFx()];
+        let bikeSparkSide = -1;
+        function hideSparkles() { sparkleFx[0].hide(); sparkleFx[1].hide(); }
+        function releaseSparkles() { const t = performance.now() / 1000; sparkleFx[0].release(t); sparkleFx[1].release(t); }
 
         // 연기 텍스처: 여러 개의 부드러운 덩어리가 뭉친 구름 형태 (3종)
         function makePuffTexture(seed) {
@@ -6110,27 +6502,6 @@
           });
         }
 
-        function spawnSpark(pos, hexColor) {
-          const mat = new THREE.MeshBasicMaterial({
-            color: hexColor,
-            transparent: true,
-            opacity: 0.95
-          });
-          const mesh = new THREE.Mesh(sparkGeo, mat);
-          mesh.position.copy(pos);
-          scene.add(mesh);
-          particles.push({
-            kind: 'spark',
-            mesh,
-            vx: (Math.random() - 0.5) * 8.5,
-            vy: 2.8 + Math.random() * 4.5,
-            vz: (Math.random() - 0.5) * 8.5,
-            life: 0.26,
-            maxLife: 0.26,
-            grow: -0.5
-          });
-        }
-
         function writeSkidQuad(baseIdx, p0, p1, halfW) {
           const dx = p1.x - p0.x;
           const dz = p1.z - p0.z;
@@ -6153,7 +6524,8 @@
         }
 
         return {
-          update(dt, active, driftDeg, isCutting, isDoubleDrifting) {
+          update(dt, active, driftDeg, isCutting, isDoubleDrifting, skidHalfW) {
+            const sw = skidHalfW || 0.24;
             for (let i = particles.length - 1; i >= 0; i--) {
               const p = particles[i];
               p.life -= dt;
@@ -6165,12 +6537,20 @@
               }
               const ratio = p.life / p.maxLife;
               if (p.kind === 'spark') {
+                p.vy -= 18 * dt;
+                const dr = Math.exp(-1.4 * dt);
+                p.vx *= dr; p.vz *= dr;
                 p.mesh.position.x += p.vx * dt;
                 p.mesh.position.y += p.vy * dt;
                 p.mesh.position.z += p.vz * dt;
-                p.mesh.material.opacity = ratio * 0.8;
-                const s = Math.max(0.2, 1 + (1 - ratio) * p.grow);
-                p.mesh.scale.setScalar(s);
+                if (p.mesh.position.y < p.groundY) {
+                  p.mesh.position.y = p.groundY;
+                  p.vy = Math.abs(p.vy) * 0.35;
+                }
+                p.mesh.material.rotation += p.spin * dt;
+                const sc = p.size * (0.4 + 0.6 * ratio);
+                p.mesh.scale.set(sc, sc, 1);
+                p.mesh.material.opacity = Math.min(1, ratio * 2.2);
               } else {
                 // 연기: 공기저항으로 감속하며 위로 살짝 떠오르고, 회전하며 부풀다가 서서히 사라짐
                 const dr = Math.exp(-p.drag * dt);
@@ -6189,6 +6569,7 @@
 
             if (!active || !kart.isGrounded || Math.abs(kart.speed) < 12) {
               hasPrevSkid = false;
+              releaseSparkles();
               return;
             }
 
@@ -6213,8 +6594,8 @@
               const dist = prevL.distanceTo(leftWheelPos);
               if (dist > 0.25 && dist < 8.0) {
                 const base = skidHead * 36;
-                writeSkidQuad(base, prevL, leftWheelPos, 0.24);
-                writeSkidQuad(base + 18, prevR, rightWheelPos, 0.24);
+                writeSkidQuad(base, prevL, leftWheelPos, sw);
+                writeSkidQuad(base + 18, prevR, rightWheelPos, sw);
                 skidHead = (skidHead + 1) % MAX_SKID_SEGS;
                 skidGeo.attributes.position.needsUpdate = true;
               }
@@ -6240,15 +6621,30 @@
               if (Math.random() < 0.55) spawnSmoke(wheelPos, 'core', tint, ox, oz, bx, bz, power);
               if (Math.random() < 0.65) spawnSmoke(wheelPos, 'grit', tint, ox * 1.6, oz * 1.6, bx * 0.6, bz * 0.6, power);
             }
-            if (driftDeg >= 10 && Math.random() < 0.78) {
-              let sparkColor = 0xfacc15;
-              if (isCutting) sparkColor = 0x38bdf8;
-              else if (isDoubleDrifting) sparkColor = 0xe879f9;
-              else if (driftDeg >= 25) sparkColor = 0xf97316;
-              spawnSpark(Math.random() < 0.5 ? leftWheelPos : rightWheelPos, sparkColor);
+            if (driftDeg >= 10) {
+              let sparkKind = 'yellow';
+              if (isCutting) sparkKind = 'blue';
+              else if (isDoubleDrifting) sparkKind = 'purple';
+              else if (driftDeg >= 25) sparkKind = 'red';
+              const now = performance.now() / 1000;
+              if (currentVehicle === 'bike') {
+                // 뒷바퀴가 한 개: 스파클도 하나만
+                const mid = new THREE.Vector3().addVectors(leftWheelPos, rightWheelPos).multiplyScalar(0.5);
+                // 하나만 표시: 차체가 미끄러지는(바깥) 쪽에만, 방향이 확실히 바뀔 때만 전환
+                if (Math.abs(kart.lateralSlideVel) > 1.0) bikeSparkSide = kart.lateralSlideVel > 0 ? -1 : 1;
+                sparkleFx[0].update(mid, yaw, sparkKind, now, power, backK, 1, bikeSparkSide);
+                sparkleFx[1].release(now);
+              } else {
+                // 뒷바퀴가 두 개: 바퀴마다 하나씩
+                sparkleFx[0].update(leftWheelPos, yaw, sparkKind, now, power, backK, 0.85, -1);
+                sparkleFx[1].update(rightWheelPos, yaw, sparkKind, now, power, backK, 0.85, 1);
+              }
+            } else {
+              releaseSparkles();
             }
           },
           reset() {
+            hideSparkles();
             hasPrevSkid = false;
             skidHead = 0;
             skidPositions.fill(0);
@@ -6405,7 +6801,7 @@
       // --------------------------------------------------------------------------
       function updatePhysics(dt) {
         if (race.phase !== 'racing') {
-          if (race.phase === 'countdown') updateCountdown(dt);
+          if (race.phase === 'countdown') updateCountdown(frameRealDt);
           kart.speed = 0;
           return;
         }
@@ -6430,7 +6826,10 @@
           }
           if (!kart.instantCharges.length) kart.instantArmed = false;
         }
-        if (kart.afterDragTimer > 0) kart.afterDragTimer = Math.max(0, kart.afterDragTimer - dt);
+        if (kart.afterDragTimer > 0) {
+          kart.afterDragTimer = Math.max(0, kart.afterDragTimer - dt);
+          if (kart.afterDragTimer === 0 && !kart.afterDragShort) kart.afterDragSettleT = 0.3; // 끌림이 끝나면 차체가 부드럽게 정렬
+        }
         // 앞키를 떼고 있으면 부스터/순간부스터 유지 불가
         if (kart.instantBoostTimer <= 0) kart.instantBoostLocked = false;
         if (!inputState.ACCEL) { kart.nitroBoostTimer = 0; if (!kart.instantBoostLocked) kart.instantBoostTimer = 0; }
@@ -6477,10 +6876,28 @@
         const effectiveMaxSpeed = kart.maxSpeed * boostMult * nitroDragBonus;
         const isBoosting = boostMult > 1.01;
 
+        // 끌기: 드리프트 후 끌리는 동안 드리프트 방향의 방향키를 누르면(이미 누르고 있어도) 끌기로 전환되어 키를 떼거나 반대키를 누를 때까지 유지
+        if (!kart.isDrifting && kart.afterDragTimer > 0 && kart.afterDragMax > 0 && kart.afterDragCancelT <= 0 && !inputState.DRIFT && Math.abs(kart.speed) > 12) {
+          const holdSameAfter = (kart.afterDragDir === 1 && inputState.LEFT && !inputState.RIGHT) ||
+            (kart.afterDragDir === -1 && inputState.RIGHT && !inputState.LEFT);
+          if (holdSameAfter) {
+            kart.isDrifting = true; kart.isDragging = true; kart.isCutting = false; kart.isDoubleDrifting = false;
+            kart.driftDir = kart.afterDragDir;
+            kart.afterDragTimer = 0; kart.afterDragSettleT = 0; kart.afterDragCancelT = 0;
+            kart.recentDriftTimer = 0; kart.recentDriftDir = 0;
+          }
+        }
+        // 키를 뗀 뒤 끌리는 중(숏 드리프트 제외): 가속하지 않고, 끌릴수록 더 감속
+        const afterDragging = !kart.isDrifting && kart.afterDragTimer > 0 && kart.afterDragMax > 0 && !kart.afterDragShort && kart.afterDragCancelT <= 0;
+        if (afterDragging) {
+          const ar = 1 - kart.afterDragTimer / kart.afterDragMax; // 0 → 1
+          kart.speed *= Math.pow(0.90 - 0.35 * ar * ar, dt);       // 초당 ×0.90 → ×0.55
+        }
+
         // 가속 / 브레이크 / 자연 감속
         if (inputState.ACCEL) {
           const accelRate = isBoosting ? vehStat().boostAccel : 23;
-          if (kart.speed < effectiveMaxSpeed) kart.speed += accelRate * dt;
+          if (kart.speed < effectiveMaxSpeed && !afterDragging) kart.speed += accelRate * dt;
         } else if (inputState.BRAKE) {
           if (kart.speed > 1.5) {
             kart.speed -= 38 * dt;
@@ -6541,7 +6958,7 @@
                   slideRatio = 0.0;
                   kart.driftAccumRad += 1.05 * dt;
                 } else if (kart.isDragging) {
-                  turnMult = 0.35;
+                  turnMult = 0.43; // 끌기 방향전환률 (0.35 → 0.43)
                   targetSlip = kart.driftDir * 0.49;
                   slideRatio = 0.36;
                 } else if (kart.isDoubleDrifting) {
@@ -6562,9 +6979,17 @@
                   kart.driftAccumRad += Math.abs(dYaw);
                 }
 
-                kart.visualSlipAngle += (targetSlip - kart.visualSlipAngle) * Math.min(1, dt * 8.0);
+                // 반대 방향으로 연속 드리프트 시 차체가 확 꺾이지 않도록 전환 속도를 제한해 부드럽게 넘어가게 함
+                const slipFlip = kart.visualSlipAngle * targetSlip < 0;
+                let slipStep = (targetSlip - kart.visualSlipAngle) * Math.min(1, dt * (slipFlip ? 4.2 : 8.0));
+                if (slipFlip) {
+                  const maxSlipStep = 2.1 * dt; // 최대 약 2.1 rad/s
+                  slipStep = Math.max(-maxSlipStep, Math.min(maxSlipStep, slipStep));
+                }
+                kart.visualSlipAngle += slipStep;
                 const targetSlideVel = -kart.driftDir * Math.abs(kart.speed) * slideRatio;
-                kart.lateralSlideVel += (targetSlideVel - kart.lateralSlideVel) * Math.min(1, dt * 6.8);
+                const slideFlip = kart.lateralSlideVel * targetSlideVel < 0;
+                kart.lateralSlideVel += (targetSlideVel - kart.lateralSlideVel) * Math.min(1, dt * (slideFlip ? 3.2 : 6.8));
 
                 kart.speed *= Math.pow(0.92, dt);
                 if (kart.isCutting) kart.speed *= Math.pow(0.88, dt); // 뉴커팅 감속
@@ -6580,16 +7005,37 @@
           }
         } else {
           const normalTurnRate = 0.9;
-          kart.heading += steerInput * normalTurnRate * speedFactor * dt * reverseSign;
-          // 일반 드리프트 종료 직후 살짝 끌림: 처음엔 느리게, 끌림 시간이 끝나갈수록 원래 감쇠로 복귀
-          let slipDecay = 10.0, slideDecay = 9.0;
+          // 끌리는 중 드리프트 반대 방향키를 누르면 끌림 종료 (차체가 부드럽게 돌아가며 정렬)
           if (kart.afterDragTimer > 0 && kart.afterDragMax > 0) {
-            const r = 1 - kart.afterDragTimer / kart.afterDragMax; // 0 → 1
-            slipDecay = 2.0 + (10.0 - 2.0) * r * r;
-            slideDecay = 1.6 + (9.0 - 1.6) * r * r;
+            const opp = (kart.afterDragDir === 1 && inputState.RIGHT && !inputState.LEFT) ||
+              (kart.afterDragDir === -1 && inputState.LEFT && !inputState.RIGHT);
+            if (opp) { kart.afterDragTimer = 0; kart.afterDragCancelT = 0.4; }
           }
-          kart.visualSlipAngle += (0 - kart.visualSlipAngle) * Math.min(1, dt * slipDecay);
-          kart.lateralSlideVel += (0 - kart.lateralSlideVel) * Math.min(1, dt * slideDecay);
+          const cancelBoost = kart.afterDragCancelT > 0 ? 1.3 : 1;
+          kart.heading += steerInput * normalTurnRate * cancelBoost * speedFactor * dt * reverseSign;
+          // 일반 드리프트 종료 직후 끌림: 처음엔 느리게, 끌림 시간이 끝나갈수록 원래 감쇠로 복귀
+          let slipDecay = 10.0, slideDecay = 9.0, slipTarget = 0, slideTarget = 0;
+          if (kart.afterDragCancelT > 0) {
+            kart.afterDragCancelT = Math.max(0, kart.afterDragCancelT - dt);
+            slipDecay = 6.0; slideDecay = 6.0;
+          } else if (kart.afterDragTimer > 0 && kart.afterDragMax > 0) {
+            if (kart.afterDragShort) { // 숏 드리프트: 빠르게 정렬
+              const r = 1 - kart.afterDragTimer / kart.afterDragMax; // 0 → 1
+              slipDecay = 2.0 + (10.0 - 2.0) * r * r;
+              slideDecay = 1.6 + (9.0 - 1.6) * r * r;
+            } else { // 끌리는 동안 드리프트 때처럼 차체를 틀어진 자세로 유지
+              slipTarget = kart.afterDragDir * 0.45;
+              slideTarget = -kart.afterDragDir * Math.abs(kart.speed) * 0.34;
+              slipDecay = 8.0; slideDecay = 6.8;
+              // 드리프트 호를 이어서 그리며 끌려감 (끌림이 끝나갈수록 약해짐)
+              kart.heading += kart.afterDragDir * 1.24 * 0.5 * (kart.afterDragTimer / kart.afterDragMax) * speedFactor * dt * reverseSign;
+            }
+          } else if (kart.afterDragSettleT > 0) {
+            kart.afterDragSettleT = Math.max(0, kart.afterDragSettleT - dt);
+            slipDecay = 5.5; slideDecay = 5.0;
+          }
+          kart.visualSlipAngle += (slipTarget - kart.visualSlipAngle) * Math.min(1, dt * slipDecay);
+          kart.lateralSlideVel += (slideTarget - kart.lateralSlideVel) * Math.min(1, dt * slideDecay);
         }
 
         // 최고 속도 제한
@@ -6785,7 +7231,20 @@
         kart.animPhase += dt * (4 + Math.abs(kart.speed) * 0.35);
 
         const driftDeg = (kart.driftAccumRad * 180) / Math.PI;
-        driftEffects.update(dt, kart.isDrifting, driftDeg, kart.isCutting, kart.isDoubleDrifting);
+        {
+          // 스키드 굵기: 드리프트 시작 0.08초까지는 가늘게(숏 드리프트면 그대로 살짝만 남음), 이후 점차 굵게
+          let fxOn = kart.isDrifting, fxW = 0.24, fxDeg = driftDeg;
+          if (kart.isDrifting) {
+            const h = kart.driftHold;
+            if (h < 0.08) fxW = 0.07;
+            else { const t = Math.min(1, (h - 0.08) / 0.12); fxW = 0.07 + 0.17 * t * t * (3 - 2 * t); }
+          } else if (kart.afterDragTimer > 0 && kart.afterDragMax > 0 && !kart.afterDragShort && kart.afterDragCancelT <= 0) {
+            fxOn = true; // 끌리는 동안 스키드 이어짐 (끝나갈수록 가늘게, 스파크 없음)
+            fxW = 0.07 + 0.17 * (kart.afterDragTimer / kart.afterDragMax);
+            fxDeg = Math.min(driftDeg, 9);
+          }
+          driftEffects.update(dt, fxOn, fxDeg, kart.isCutting, kart.isDoubleDrifting, fxW);
+        }
         audio.updateEngine(
           Math.abs(kart.speed) / kart.maxSpeed,
           isBoosting,
@@ -6972,7 +7431,7 @@
           : -((inputState.LEFT ? 1 : 0) - (inputState.RIGHT ? 1 : 0)) * 0.045;
         const targetPitch = (kart.isDrifting ? 0.035 : inputState.ACCEL ? 0.022 : 0) + (MAPS[currentMapId].hill ? (kart.grade || 0) * 0.9 : 0);
 
-        kartRig.bodyTiltGroup.rotation.x += (targetRoll - kartRig.bodyTiltGroup.rotation.x) * 0.18;
+        kartRig.bodyTiltGroup.rotation.x += (targetRoll - kartRig.bodyTiltGroup.rotation.x) * (targetRoll * kartRig.bodyTiltGroup.rotation.x < -0.0004 ? 0.1 : 0.18);
         kartRig.bodyTiltGroup.rotation.z += (targetPitch - kartRig.bodyTiltGroup.rotation.z) * 0.18;
 
         // 캐릭터 고개 기울임 & 핸들 회전
@@ -7161,21 +7620,25 @@
         mCtx.fillStyle = '#ffb62e';
         mCtx.fillRect(toMapX(s0.x) - 3, toMapY(s0.z) - 3, 6, 6);
 
-        // 현재 카트 위치 & 방향 마커
-        const kx = toMapX(kart.x);
-        const ky = toMapY(kart.z);
-        mCtx.save();
-        mCtx.translate(kx, ky);
-        mCtx.rotate(-kart.heading);
-        mCtx.fillStyle = '#ef4444';
-        mCtx.beginPath();
-        mCtx.moveTo(6, 0);
-        mCtx.lineTo(-4, -4);
-        mCtx.lineTo(-2, 0);
-        mCtx.lineTo(-4, 4);
-        mCtx.closePath();
-        mCtx.fill();
-        mCtx.restore();
+        // 라이더 위치 & 방향 마커 (멀티플레이: 각자 부여된 색, 내 마커는 흰 테두리로 강조)
+        const inMp = mp.active();
+        const drawMark = (px, py, hd, col, sc, outline) => {
+          mCtx.save();
+          mCtx.translate(px, py);
+          mCtx.rotate(-hd);
+          mCtx.beginPath();
+          mCtx.moveTo(6 * sc, 0);
+          mCtx.lineTo(-4 * sc, -4 * sc);
+          mCtx.lineTo(-2 * sc, 0);
+          mCtx.lineTo(-4 * sc, 4 * sc);
+          mCtx.closePath();
+          mCtx.fillStyle = col;
+          mCtx.fill();
+          if (outline) { mCtx.lineJoin = 'round'; mCtx.lineWidth = outline; mCtx.strokeStyle = outline > 1.2 ? '#ffffff' : 'rgba(6,10,20,.9)'; mCtx.stroke(); }
+          mCtx.restore();
+        };
+        if (inMp) mp.marks().forEach((m) => drawMark(toMapX(m.x), toMapY(m.z), m.h, m.color, 1, 1.2));
+        drawMark(toMapX(kart.x), toMapY(kart.z), kart.heading, inMp ? mp.myColor() : '#ef4444', inMp ? 1.15 : 1, inMp ? 1.8 : 0);
       }
 
       function updateHUD(nowMs, dt) {
@@ -7259,10 +7722,12 @@
       // 10. 메인 애니메이션 루프
       // --------------------------------------------------------------------------
       let lastFrameTime = performance.now();
+      let frameRealDt = 0.016; // 상한 없는 실제 프레임 시간 (카운트다운용: 저사양에서도 실제 3.6초에 끝나도록)
 
       function animate(nowMs) {
         requestAnimationFrame(animate);
         if (gamePaused) { lastFrameTime = nowMs; return; }
+        frameRealDt = Math.min(1.0, Math.max(0.001, (nowMs - lastFrameTime) / 1000));
         const dt = Math.min(0.05, Math.max(0.001, (nowMs - lastFrameTime) / 1000));
         lastFrameTime = nowMs;
 
@@ -7281,13 +7746,14 @@
         renderMinimap();
         updateEnvironment(nowMs * 0.001);
 
-        if (vehOpen) garagePreview(nowMs);
+        if (vehOpen) { garagePreview(nowMs); garage3d.render(nowMs); }
         let _pd = false; try { _pd = mp.renderPodium(nowMs); } catch (_) {}
         if (!_pd) renderer.render(scene, camera);
       }
 
       window.addEventListener('load', () => {
         container.focus();
+        try { applyLowSpec(); } catch (_) {}
         lastFrameTime = performance.now();
         requestAnimationFrame(animate);
       });
@@ -7312,6 +7778,10 @@
       bind('music', 'setMusic', 'setMusicVal', (v) => K.audio.setMusicVolume(v));
       bind('sfx', 'setSfx', 'setSfxVal', (v) => K.audio.setSfxVolume(v), () => { try { K.audio.playBoosterReady(); } catch (_) {} });
       bind('ui', 'setUi', 'setUiVal', (v) => document.documentElement.style.setProperty('--ui-scale', String(v)));
+      const lowBtn = document.getElementById('setLow');
+      const paintLow = () => { const on = !!K.gameSettings.low; lowBtn.textContent = on ? 'ON' : 'OFF'; lowBtn.classList.toggle('on', on); lowBtn.setAttribute('aria-pressed', String(on)); };
+      paintLow();
+      lowBtn.addEventListener('click', () => { K.gameSettings.low = K.gameSettings.low ? 0 : 1; paintLow(); K.saveSettings(); try { K.applyLowSpec(); } catch (_) {} });
       bind('wind', 'setWind', 'setWindVal');
       bind('cone', 'setCone', 'setConeVal');
       // 모든 랭크 초기화 (실수 방지: 3초 안에 한 번 더 누르면 실행)
@@ -7321,6 +7791,159 @@
         clearTimeout(rt); rt = null; try { window.kkResetRanks(); } catch (_) {}
         rb.textContent = '✓ 초기화됐어요'; setTimeout(() => { rb.textContent = '모든 랭크 초기화'; }, 1800);
       });
+      // ===== 모바일 키 배치 편집 =====
+      const B = document.body, G = (id) => document.getElementById(id);
+      const clampN = (v, a, b) => Math.min(b, Math.max(a, v));
+      const TC_ITEMS = [
+        { id: 'steer', name: '좌우 키', sel: '#tcSteerW', ui: true },
+        { id: 'gauge', name: '계기판', sel: '.ui-bc', ui: true, touchOnly: true },
+        { id: 'instant', name: '순간부스터', sel: '#tcInstantW', ui: true },
+        { id: 'boost', name: '부스터', sel: '#tcBoostW', ui: true },
+        { id: 'drift', name: '드리프트', sel: '#tcDriftW', ui: true },
+        { id: 'toggle', name: '모바일 전환키', sel: '#touchToggle', ui: false },
+      ].map((it) => Object.assign(it, { el: document.querySelector(it.sel) })).filter((it) => it.el);
+      let tcEditing = false, tcSel = null, tcDrag = null, tcTouched = new Set(), tcPre = new Set();
+      const tcLayout = () => K.gameSettings.tc;
+      const tcClear = (el) => { ['left', 'top', 'right', 'bottom', 'transform', 'transformOrigin', 'scale'].forEach((p) => { el.style[p] = ''; }); };
+      function tcApplyOne(it) {
+        const L = tcLayout() && tcLayout()[it.id];
+        if (!L || (it.touchOnly && !tcEditing && !B.classList.contains('touch-mode'))) { tcClear(it.el); return; }
+        const st = it.el.style;
+        st.left = (L.x * innerWidth) + 'px'; st.top = (L.y * innerHeight) + 'px'; st.right = 'auto'; st.bottom = 'auto';
+        st.transformOrigin = '50% 50%'; st.scale = 'none';
+        st.transform = 'translate(-50%,-50%) scale(' + (it.ui ? 'calc(var(--ui-scale) * ' + L.s + ')' : L.s) + ')';
+      }
+      const tcApplyAll = () => TC_ITEMS.forEach(tcApplyOne);
+      function tcMaterialize() { // 저장된 위치가 없는 키는 현재 화면상 위치를 기준으로 채움
+        const tc = tcLayout() || {};
+        TC_ITEMS.forEach((it) => {
+          if (tc[it.id]) return;
+          tcClear(it.el);
+          const r = it.el.getBoundingClientRect();
+          tc[it.id] = { x: clampN((r.left + r.width / 2) / innerWidth, 0.02, 0.98), y: clampN((r.top + r.height / 2) / innerHeight, 0.05, 0.98), s: 1 };
+        });
+        K.gameSettings.tc = tc;
+      }
+      const tcSize = G('tcbSize'), tcVal = G('tcbVal'), tcName = G('tcbName');
+      const tcPaintSlider = () => { tcVal.textContent = tcSize.value + '%'; tcSize.style.setProperty('--p', ((tcSize.value - tcSize.min) / (tcSize.max - tcSize.min) * 100) + '%'); };
+      function tcSelect(it) {
+        TC_ITEMS.forEach((x) => x.el.classList.toggle('tc-sel', x === it));
+        tcSel = it;
+        if (!it) { tcName.textContent = '키를 눌러 선택'; tcSize.disabled = true; tcSize.value = 100; tcPaintSlider(); return; }
+        tcName.textContent = it.name; tcSize.disabled = false; tcSize.value = Math.round(tcLayout()[it.id].s * 100); tcPaintSlider();
+      }
+      function tcEnter() {
+        closeS();
+        tcPre = new Set(Object.keys(tcLayout() || {})); tcTouched = new Set();
+        tcEditing = true; B.classList.add('tc-edit');
+        void B.offsetHeight;
+        tcMaterialize(); tcApplyAll(); tcSelect(null);
+      }
+      function tcExit() {
+        tcEditing = false; tcDrag = null; B.classList.remove('tc-edit');
+        const tc = tcLayout() || {};
+        Object.keys(tc).forEach((id) => { if (!tcPre.has(id) && !tcTouched.has(id)) delete tc[id]; });
+        K.gameSettings.tc = Object.keys(tc).length ? tc : null;
+        K.saveSettings();
+        TC_ITEMS.forEach((x) => x.el.classList.remove('tc-sel'));
+        tcApplyAll();
+        openS();
+      }
+      G('setTcEdit').addEventListener('click', tcEnter);
+      G('tcbDone').addEventListener('click', tcExit);
+      G('tcbReset').addEventListener('click', () => {
+        K.gameSettings.tc = null; tcTouched = new Set(); tcPre = new Set();
+        TC_ITEMS.forEach((it) => tcClear(it.el));
+        void B.offsetHeight; tcMaterialize(); tcApplyAll(); tcSelect(null); K.saveSettings();
+      });
+      tcSize.addEventListener('input', () => {
+        if (!tcSel) return;
+        tcLayout()[tcSel.id].s = tcSize.value / 100; tcTouched.add(tcSel.id); tcPaintSlider(); tcApplyOne(tcSel); K.saveSettings();
+      });
+      const tcHit = (t) => TC_ITEMS.find((it) => it.el.contains(t));
+      window.addEventListener('pointerdown', (e) => {
+        if (!tcEditing) return;
+        const it = tcHit(e.target); if (!it) return;
+        e.preventDefault(); e.stopImmediatePropagation();
+        tcSelect(it);
+        const L = tcLayout()[it.id];
+        tcDrag = { it, id: e.pointerId, dx: e.clientX - L.x * innerWidth, dy: e.clientY - L.y * innerHeight };
+      }, true);
+      window.addEventListener('pointermove', (e) => {
+        if (!tcDrag || e.pointerId !== tcDrag.id) return;
+        e.preventDefault();
+        const L = tcLayout()[tcDrag.it.id];
+        L.x = clampN((e.clientX - tcDrag.dx) / innerWidth, 0.02, 0.98);
+        L.y = clampN((e.clientY - tcDrag.dy) / innerHeight, 70 / innerHeight, 0.98); // 상단 편집 바 아래로
+        tcTouched.add(tcDrag.it.id); tcApplyOne(tcDrag.it);
+      }, true);
+      const tcEndDrag = (e) => { if (tcDrag && e.pointerId === tcDrag.id) { tcDrag = null; K.saveSettings(); } };
+      window.addEventListener('pointerup', tcEndDrag, true);
+      window.addEventListener('pointercancel', tcEndDrag, true);
+      window.addEventListener('click', (e) => { if (tcEditing && tcHit(e.target)) { e.preventDefault(); e.stopImmediatePropagation(); } }, true);
+      window.addEventListener('keydown', (e) => {
+        if (!tcEditing) return;
+        if (e.code === 'Escape') tcExit();
+        e.stopImmediatePropagation(); if (e.code === 'Enter' || e.code === 'Space') e.preventDefault();
+      }, true);
+      window.addEventListener('resize', tcApplyAll);
+      new MutationObserver(tcApplyAll).observe(B, { attributes: true, attributeFilter: ['class'] });
+      tcApplyAll();
+
+      // ===== 안내 말풍선 (5초) =====
+      let tipEl = null, tipTimer = 0, tipKey = '';
+      function hideTip(key) {
+        if (key && tipKey !== key) return;
+        clearTimeout(tipTimer); tipTimer = 0; tipKey = '';
+        if (tipEl) { const t = tipEl; tipEl = null; t.classList.remove('show'); setTimeout(() => t.remove(), 300); }
+      }
+      function showTip(key, target, text, order, ms) {
+        hideTip();
+        if (!target) return;
+        const r = target.getBoundingClientRect(); if (r.width < 2 || r.height < 2) return;
+        const b = document.createElement('div'); b.className = 'tip-bubble'; b.textContent = text; B.appendChild(b);
+        const bw = b.offsetWidth, bh = b.offsetHeight, W = innerWidth, H = innerHeight, g = 14, m = 8;
+        const spot = {
+          left: { x: r.left - g - bw, y: r.top + r.height / 2 - bh / 2 }, right: { x: r.right + g, y: r.top + r.height / 2 - bh / 2 },
+          below: { x: r.left + r.width / 2 - bw / 2, y: r.bottom + g }, above: { x: r.left + r.width / 2 - bw / 2, y: r.top - g - bh },
+        };
+        const fits = (k) => { const p = spot[k]; return p.x >= m && p.y >= m && p.x + bw <= W - m && p.y + bh <= H - m; };
+        const pick = order.find(fits) || order[order.length - 1], p = spot[pick];
+        const x = clampN(p.x, m, Math.max(m, W - m - bw)), y = clampN(p.y, m, Math.max(m, H - m - bh));
+        b.style.left = x + 'px'; b.style.top = y + 'px';
+        b.style.setProperty('--ax', clampN(r.left + r.width / 2 - x - 6, 10, bw - 22) + 'px');
+        b.style.setProperty('--ay', clampN(r.top + r.height / 2 - y - 6, 8, bh - 20) + 'px');
+        b.classList.add('d-' + pick); void b.offsetWidth; b.classList.add('show');
+        tipEl = b; tipKey = key; tipTimer = setTimeout(() => hideTip(key), ms || 5000);
+      }
+      const menuTipOk = () => {
+        const sMenu = G('startMenu');
+        return B.classList.contains('in-menu') && !B.classList.contains('mp-screen') && !B.classList.contains('tc-edit') && !sm.classList.contains('open')
+          && sMenu && sMenu.style.display !== 'none' && sMenu.style.opacity !== '0';
+      };
+      function menuTip() { if (K.gameSettings.low || !menuTipOk()) return; showTip('menu', G('settingsBtn'), '저사양 모드를 켜보세요!', ['right', 'below', 'above'], 5000); }
+      G('settingsBtn').addEventListener('click', () => hideTip('menu'));
+      let wasMenu = B.classList.contains('in-menu');
+      new MutationObserver(() => {
+        const now = B.classList.contains('in-menu');
+        if (now && !wasMenu) setTimeout(menuTip, 700);
+        if (!now) hideTip();
+        wasMenu = now;
+        if (B.classList.contains('mp-screen')) hideTip('menu');
+      }).observe(B, { attributes: true, attributeFilter: ['class'] });
+      const lobbyEl = G('partyLobby');
+      if (lobbyEl) {
+        let lobbyWas = lobbyEl.classList.contains('open');
+        new MutationObserver(() => {
+          const now = lobbyEl.classList.contains('open');
+          if (now && !lobbyWas) setTimeout(() => { if (lobbyEl.classList.contains('open')) showTip('nick', document.querySelector('#partyLobby .nick-box'), '닉네임을 설정해보세요!', ['left', 'below', 'above'], 5000); }, 450);
+          if (!now) hideTip('nick');
+          lobbyWas = now;
+        }).observe(lobbyEl, { attributes: true, attributeFilter: ['class'] });
+      }
+      window.addEventListener('load', () => setTimeout(menuTip, 900));
+      if (document.readyState === 'complete') setTimeout(menuTip, 900);
+
       // 설정창이 열린 동안에는 게임 키 입력 차단 (Esc로 닫기)
       window.addEventListener('keydown', (e) => {
         if (!sm.classList.contains('open')) return;
